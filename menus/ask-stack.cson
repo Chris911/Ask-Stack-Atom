@@ -1,0 +1,16 @@
+# See https://atom.io/docs/latest/creating-a-package#menus for more details
+'context-menu':
+  '.overlayer':
+      'Enable ask-stack': 'ask-stack:toggle'
+
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'ask-stack'
+      'submenu': [
+        { 'label': 'Toggle', 'command': 'ask-stack:toggle' }
+      ]
+    ]
+  }
+]

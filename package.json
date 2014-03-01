@@ -1,0 +1,15 @@
+{
+  "name": "ask-stack",
+  "main": "./lib/ask-stack",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A short description of your package",
+  "activationEvents": ["ask-stack:toggle"],
+  "repository": "https://github.com/atom/ask-stack",
+  "license": "MIT",
+  "engines": {
+    "atom": ">0.50.0"
+  },
+  "dependencies": {
+  }
+}
