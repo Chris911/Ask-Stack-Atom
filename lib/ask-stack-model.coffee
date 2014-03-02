@@ -48,7 +48,6 @@ class AskStack
     return answers
 
   getCodeSamples: (answers, callback) ->
-
     options =
       hostname: 'api.stackexchange.com'
       path: "/2.2/answers/#{answers.join(';')}?order=desc&sort=activity&site=stackoverflow&filter=withbody"
@@ -68,8 +67,10 @@ class AskStack
         #debugger
         body = buffer.join("")
         response = JSON.parse(body)
-        console.log "SAMPLE CALLBACK"
-        callback(response)
+        bodies = []
+        for item, items in response['items']
+          bodies.push(item['body'])
+        callback(bodies)
 
       gunzip.on "error", (e) ->
         console.log "Error: #{e.message}"
