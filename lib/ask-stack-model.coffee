@@ -48,4 +48,30 @@ class AskStack
     return answers
 
   getCodeSamples: (answers, callback) ->
-    console.log answers
+
+    options =
+      hostname: 'api.stackexchange.com'
+      path: "/2.2/answers/#{answers.join(';')}?order=desc&sort=activity&site=stackoverflow&filter=withbody"
+      method: 'GET'
+      headers:
+        "User-Agent": "Atom-Ask-Stack"
+        "accept-encoding" : "gzip"
+
+    request = https.request options, (res) ->
+      buffer = []
+      gunzip = zlib.createGunzip();
+      res.pipe(gunzip)
+
+      gunzip.on "data", (chunk) ->
+        buffer.push(chunk.toString())
+      gunzip.on "end", ->
+        #debugger
+        body = buffer.join("")
+        response = JSON.parse(body)
+        console.log "SAMPLE CALLBACK"
+        callback(response)
+
+      gunzip.on "error", (e) ->
+        console.log "Error: #{e.message}"
+
+    request.end()
