@@ -1,39 +1,51 @@
 https = require 'https'
 zlib = require 'zlib'
-module.exports =
 
+module.exports =
 class AskStack
   constructor: ->
       @question = ""
       @tag = ""
 
   search: (callback) ->
-    options =
-      hostname: 'api.stackexchange.com'
-      path: "/2.2/search?order=desc&sort=votes&max=10&tagged=#{encodeURIComponent(@tag.trim())}&intitle=#{encodeURIComponent(@question.trim())}&site=stackoverflow"
-      method: 'GET'
-      headers:
-        "User-Agent": "Atom-Ask-Stack"
-        "accept-encoding" : "gzip"
+    cb = callback
+    @getQuestions (questions) =>
+      @getCodeSamples(@getAnswers(questions), cb)
 
-    request = https.request options, (res) ->
-      buffer = []
-      gunzip = zlib.createGunzip();
-      res.pipe(gunzip)
+  getQuestions: (callback) ->
+      options =
+        hostname: 'api.stackexchange.com'
+        path: "/2.2/search?order=desc&sort=votes&pagesize=3&tagged=#{encodeURIComponent(@tag.trim())}&intitle=#{encodeURIComponent(@question.trim())}&site=stackoverflow"
+        method: 'GET'
+        headers:
+          "User-Agent": "Atom-Ask-Stack"
+          "accept-encoding" : "gzip"
 
-      gunzip.on "data", (chunk) ->
-        buffer.push(chunk.toString())
-      gunzip.on "end", ->
-        debugger
-        body = buffer.join("")
-        response = JSON.parse(body)
-        callback(response)
+      request = https.request options, (res) ->
+        buffer = []
+        gunzip = zlib.createGunzip();
+        res.pipe(gunzip)
 
-      gunzip.on "error", (e) ->
-        console.log "Error: #{e.message}"
+        gunzip.on "data", (chunk) ->
+          buffer.push(chunk.toString())
+        gunzip.on "end", ->
+          #debugger
+          body = buffer.join("")
+          response = JSON.parse(body)
+          callback(response)
 
-    #request.write(JSON.stringify(@toParams()))
+        gunzip.on "error", (e) ->
+          console.log "Error: #{e.message}"
 
-    request.end()
+      request.end()
 
-  replaceSace: (text) ->
+  getAnswers: (questions) ->
+    answers = []
+    console.log(questions)
+    for item, items in questions['items']
+      if item['accepted_answer_id'] != undefined
+        answers.push(item['accepted_answer_id'])
+    return answers
+
+  getCodeSamples: (answers, callback) ->
+    console.log answers
