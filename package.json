@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "A short description of your package",
-  "activationEvents": ["ask-stack:toggle"],
+  "activationEvents": ["ask-stack:presentPanel"],
   "repository": "https://github.com/atom/ask-stack",
   "license": "MIT",
   "engines": {

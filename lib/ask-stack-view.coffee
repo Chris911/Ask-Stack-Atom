@@ -1,13 +1,26 @@
-{View} = require 'atom'
+{EditorView, View} = require 'atom'
+
+AskStack = require './ask-stack-model'
 
 module.exports =
 class AskStackView extends View
   @content: ->
-    @div class: 'ask-stack overlay from-top', =>
-      @div "The AskStack package is Alive! It's ALIVE!", class: "message"
+    @div class: "ask-stack overlay from-top padded", =>
+      @div class: "inset-panel", =>
+        @div class: "panel-heading", =>
+          @span "Ask StackOverflow"
+        @div class: "panel-body padded", =>
+          @div outlet: 'signupForm', =>
+            @subview 'questionEditor', new EditorView(mini:true, placeholderText: 'Enter Question')
+            @div class: 'pull-right', =>
+              @button outlet: 'askButton', class: 'btn btn-primary', "Ask!"
+          @div outlet: 'progressIndicator', =>
+            @span class: 'loading loading-spinner-medium'
 
   initialize: (serializeState) ->
-    atom.workspaceView.command "ask-stack:toggle", => @toggle()
+    @handleEvents()
+    @askStack = null
+    atom.workspaceView.command "ask-stack:presentPanel", => @presentPanel()
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
@@ -16,9 +29,23 @@ class AskStackView extends View
   destroy: ->
     @detach()
 
-  toggle: ->
-    console.log "AskStackView was toggled!"
-    if @hasParent()
-      @detach()
-    else
-      atom.workspaceView.append(this)
+  handleEvents: ->
+    @askButton.on 'click', => @askStackRequest()
+    @questionEditor.on 'core:confirm', => @askStackRequest()
+    @questionEditor.on 'core:cancel', => @detach()
+
+  presentPanel: ->
+    @askStack = new AskStack()
+
+    atom.workspaceView.append(this)
+
+    @progressIndicator.hide()
+    @questionEditor.focus()
+
+  askStackRequest: ->
+    @progressIndicator.show()
+
+    @askStack.question = @questionEditor.getText()
+    @askStack.tag = "ruby"
+    @askStack.search (response) =>
+      console.log(response)
