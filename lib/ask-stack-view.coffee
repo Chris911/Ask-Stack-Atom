@@ -1,7 +1,7 @@
 {EditorView, View} = require 'atom'
 
 AskStack = require './ask-stack-model'
-AskTaskResultView = require './ask-stack-result-view'
+AskStackResultView = require './ask-stack-result-view'
 
 module.exports =
 class AskStackView extends View
@@ -43,16 +43,25 @@ class AskStackView extends View
   presentPanel: ->
     @askStack = new AskStack()
 
+    this.show()
     atom.workspaceView.append(this)
 
     @progressIndicator.hide()
     @resultsPanel.hide()
     @questionEditor.focus()
 
-  appendCodeResults = (codeSample) ->
-    for code in codeSample
-      #resultView = new AskTaskResultView()
-      #resultView.appendTo(@resultsPanel)
+  showResults = (answersJson) ->
+    editor = atom.workspace.getActiveEditor()
+    return unless editor?
+
+    previousActivePane = atom.workspace.getActivePane()
+
+    resultView = new AskStackResultView(editorId: editor.id)
+
+    previousActivePane.activate()
+    # atom.workspaceView.append(resultView)
+    # for code in codeSample
+    #   resultView.addLine(code)
 
   askStackRequest: ->
     @progressIndicator.show()
@@ -61,10 +70,10 @@ class AskStackView extends View
     @askStack.tag = @languageEditor.getText()
     @askStack.search (response) =>
       @progressIndicator.hide()
-      @resultsPanel.show()
+      this.hide()
       #console.log(response)
       codeSamples = []
       for body in response
         #TODO: Filter out only code
         codeSamples.push(body)
-      appendCodeResults(codeSamples)
+      showResults(codeSamples)
