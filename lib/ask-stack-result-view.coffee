@@ -1,17 +1,12 @@
-{ScrollView} = require 'atom'
+{$, $$$, ScrollView} = require 'atom'
 
 module.exports =
 class AskStackResultView extends ScrollView
   @content: ->
-    @div class: 'ask-stack-result', tabindex: -1, =>
-      @span "test"
+    @div class: 'ask-stack-result native-key-bindings', tabindex: -1
 
-  constructor: ({@editorId}) ->
-    super
-
-    if @editorId?
-      @resolveEditor(@editorId)
-      @toggle()
+  initialize: ->
+      super
 
   destroy: ->
     @unsubscribe()
@@ -19,33 +14,8 @@ class AskStackResultView extends ScrollView
   getTitle: ->
     "Ask Stack Results"
 
-  toggle: ->
-    uri = "ask-stack-result://#{@editorId}"
-
-    previewPane = atom.workspace.paneForUri(uri)
-    if previewPane
-      previewPane.destroyItem(previewPane.itemForUri(uri))
-      return
-
-    atom.workspace.open(uri, split: 'right', searchAllPanes: true).done (askStackResultView) ->
-      if askStackResultView instanceof AskStackResultView
-        renderAnswers()
-
-  resolveEditor: (editorId) ->
-    resolve = =>
-      @editor = @editorForId(editorId)
-
-      if @editor?
-        @trigger 'title-changed' if @editor?
-        @handleEvents()
-
-    if atom.workspace?
-      resolve()
-
-  editorForId: (editorId) ->
-    for editor in atom.workspace.getEditors()
-      return editor if editor.id?.toString() is editorId.toString()
-    null
+  getUri: ->
+    "ask-stack://result-view"
 
   handleEvents: ->
     @subscribe this, 'core:move-up', => @scrollUp()
@@ -53,3 +23,4 @@ class AskStackResultView extends ScrollView
 
   renderAnswers: (answersJson) ->
     # Do stuff
+    @html(answersJson)

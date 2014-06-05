@@ -1,3 +1,5 @@
+url = require 'url'
+
 {EditorView, View} = require 'atom'
 
 AskStack = require './ask-stack-model'
@@ -26,6 +28,16 @@ class AskStackView extends View
     @askStack = null
     atom.workspaceView.command "ask-stack:presentPanel", => @presentPanel()
 
+    atom.workspace.registerOpener (uriToOpen) ->
+      try
+        {protocol, host, pathname} = url.parse(uriToOpen)
+      catch error
+        return
+
+      return unless protocol is 'ask-stack:'
+
+      return new AskStackResultView()
+
   # Returns an object that can be retrieved when package is activated
   serialize: ->
 
@@ -51,17 +63,13 @@ class AskStackView extends View
     @questionEditor.focus()
 
   showResults = (answersJson) ->
-    editor = atom.workspace.getActiveEditor()
-    return unless editor?
+    uri = "ask-stack://result-view"
 
     previousActivePane = atom.workspace.getActivePane()
-
-    resultView = new AskStackResultView(editorId: editor.id)
-
-    previousActivePane.activate()
-    # atom.workspaceView.append(resultView)
-    # for code in codeSample
-    #   resultView.addLine(code)
+    atom.workspace.open(uri, split: 'right', searchAllPanes: true).done (askStackResultView) ->
+      if askStackResultView instanceof AskStackResultView
+        askStackResultView.renderAnswers(answersJson)
+        previousActivePane.activate()
 
   askStackRequest: ->
     @progressIndicator.show()
