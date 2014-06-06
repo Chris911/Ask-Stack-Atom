@@ -1,3 +1,3 @@
-# ask-stack package
+# Ask Stack Overflow for Atom
 
-A short description of your package.
+Quickly get answers and code samples from Stack Overflow directly in Atom editor. 
