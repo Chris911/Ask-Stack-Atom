@@ -1,4 +1,4 @@
-// The ui-variables file is provided by base themes provided by Atom.
+//The ui-variables file is provided by base themes provided by Atom.
 //
 // See https://github.com/atom/atom-dark-ui/blob/master/stylesheets/ui-variables.less
 // for a full listing of what's available.
@@ -15,9 +15,98 @@
 .ask-stack-result {
   font-size: 14px;
   line-height: 1.6;
-  background-color: #282828;
+  background-color: #333232;
   color: #fff;
   overflow: scroll;
   box-sizing: border-box;
   padding: 15px;
+}
+
+.box-shadow(@arguments) {
+  -webkit-box-shadow: @arguments;
+  -moz-box-shadow: @arguments;
+  -ms-box-shadow: @arguments;
+  -o-box-shadow: @arguments;
+  box-shadow: @arguments;
+}
+
+@resultBgColor: #f2f2f6;
+@resultColor: #232323;
+@resultBorderColor: #fd8a07;
+@resultBorderRightColor: #fd8a07;
+@resultBoxShadowColor:rgba(250,250,250,0.7);
+
+.ui-result {
+  position: relative;
+  background: @resultBgColor;
+  color:@resultColor;
+  padding: 1px 8px 10px;
+  margin-bottom:10px;
+  border-left:55px solid @resultBorderColor;
+  border-right:5px solid @resultBorderColor;
+  font-family: "proxima-nova",sans-serif;
+
+  .box-shadow(0 1px 4px @resultBoxShadowColor);
+
+  a.underline {
+    color:#222;
+    text-decoration:underline;
+    &:visited{ color:#222; }
+    &:active{ color:#222; }
+  }
+
+  .btn {
+    color:#999;
+    &:visited{ color:#999; }
+    &:active{ color:#999; }
+  }
+
+  blockquote p { font-size:13px; }
+
+  .ui-label { font-weight:normal; }
+
+  .title {
+    font-weight:normal;
+    position:relative;
+    .title-string {
+      display:block;
+      position:relative;
+      width:75%;
+      font-size:0.8em;
+      line-height:1.2em; /*white-space:nowrap;*/
+      text-overflow:ellipsis;
+      overflow:hidden;
+    }
+
+    .score {
+      position: absolute;
+      left: -60px; top: 1px;
+      background: green;
+      border-radius:5px;
+      width:50px;
+      height:25px;
+    }
+    .score p {
+      color: #fff;
+      text-align: center;
+      font-size: 0.8em;
+    }
+  }
+
+  pre {
+    padding: 20px 0px 0px 10px;
+    height:auto;
+    border-radius:0px;
+  }
+
+  .created {
+    position: absolute;
+    top: 40px;
+    font-size: 0.8em;
+    font-style: italic;
+  }
+
+  .tags {
+      a { color:#eaeaea; }
+  }
 }
