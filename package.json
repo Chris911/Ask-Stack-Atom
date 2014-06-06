@@ -2,7 +2,7 @@
   "name": "Ask Stack",
   "main": "./lib/ask-stack",
   "version": "0.0.1",
-  "description": "Quickly get answers and code samples for Stack Overflow in Atom",
+  "description": "Quickly get answers and code samples from Stack Overflow in Atom",
   "activationEvents": ["ask-stack:presentPanel"],
   "repository": "https://github.com/Chris911/ask-stack",
   "license": "MIT",
@@ -10,7 +10,5 @@
     "atom": ">0.50.0"
   },
   "dependencies": {
-    "cheerio": "0.15.0",
-    "roaster": "^1.0.7"
   }
 }
