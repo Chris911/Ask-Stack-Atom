@@ -15,7 +15,12 @@ class AskStack
   getQuestions: (callback) ->
       options =
         hostname: 'api.stackexchange.com'
-        path: "/2.2/search?order=desc&sort=votes&pagesize=3&tagged=#{encodeURIComponent(@tag.trim())}&intitle=#{encodeURIComponent(@question.trim())}&site=stackoverflow"
+        path: "/2.2/search/advanced?pagesize=5&" +
+        "order=desc&" + "sort=votes&" + "
+        q=#{encodeURIComponent(@question.trim())}&" +
+        "tagged=#{encodeURIComponent(@tag.trim())}&" +
+        "site=stackoverflow&" +
+        "filter=!b0OfNKD*3O569e"
         method: 'GET'
         headers:
           "User-Agent": "Atom-Ask-Stack"
