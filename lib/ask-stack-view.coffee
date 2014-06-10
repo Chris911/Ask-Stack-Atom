@@ -62,15 +62,6 @@ class AskStackView extends View
     @resultsPanel.hide()
     @questionEditor.focus()
 
-  showResults = (answersJson) ->
-    uri = "ask-stack://result-view"
-
-    previousActivePane = atom.workspace.getActivePane()
-    atom.workspace.open(uri, split: 'right', searchAllPanes: true).done (askStackResultView) ->
-      if askStackResultView instanceof AskStackResultView
-        askStackResultView.renderAnswers(answersJson)
-        previousActivePane.activate()
-
   askStackRequest: ->
     @progressIndicator.show()
 
@@ -79,9 +70,13 @@ class AskStackView extends View
     @askStack.search (response) =>
       @progressIndicator.hide()
       this.hide()
-      #console.log(response)
-      codeSamples = []
-      for body in response
-        #TODO: Filter out only code
-        codeSamples.push(body)
-      showResults(codeSamples)
+      showResults(response)
+
+  showResults = (answersJson) ->
+    uri = "ask-stack://result-view"
+
+    previousActivePane = atom.workspace.getActivePane()
+    atom.workspace.open(uri, split: 'right', searchAllPanes: true).done (askStackResultView) ->
+      if askStackResultView instanceof AskStackResultView
+        askStackResultView.renderAnswers(answersJson)
+        previousActivePane.activate()
