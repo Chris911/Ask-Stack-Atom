@@ -22,7 +22,12 @@ class AskStackResultView extends ScrollView
     @subscribe this, 'core:move-down', => @scrollDown()
 
   renderAnswers: (answersJson) ->
-    # Do stuff
+    html = ''
+
+    for question in answersJson['items']
+      questionHtml = @renderQuestion(question)
+      html += questionHtml
+
     test = '''
 <div class="ui-result">
 
@@ -63,4 +68,21 @@ public class ThreadB extends Thread {
                     </pre>
 </div>
     '''
-    @html(test + test)
+    @html(html)
+
+  renderQuestion: (question) ->
+    html = "<div class=\"ui-result\">
+      <h2 class=\"title\">
+      <a class=\"underline\" href=\"#{question['link']}\">
+        <span class=\"title-string\">#{question['title']}</span>
+      </a>
+      <div class=\"score\"><p>#{question['score']}</p></div>
+    </h2>
+    <div class=\"created\">
+      #{new Date(question['creation_date'] * 1000).toLocaleString()}
+    </div>
+    <div class=\"tags\">"
+    for tag in question['tags']
+      html += "<span class=\"label label-info\">#{tag}</span>\n"
+    html += "</div>
+    </div>"

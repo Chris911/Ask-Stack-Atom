@@ -23,10 +23,6 @@
 }
 
 .box-shadow(@arguments) {
-  -webkit-box-shadow: @arguments;
-  -moz-box-shadow: @arguments;
-  -ms-box-shadow: @arguments;
-  -o-box-shadow: @arguments;
   box-shadow: @arguments;
 }
 
@@ -40,7 +36,7 @@
   position: relative;
   background: @resultBgColor;
   color:@resultColor;
-  padding: 1px 8px 10px;
+  padding: 1px 8px 8px;
   margin-bottom:10px;
   border-left:55px solid @resultBorderColor;
   border-right:5px solid @resultBorderColor;
@@ -68,10 +64,10 @@
   .title {
     font-weight:normal;
     position:relative;
+    margin-bottom: 0px;
     .title-string {
       display:block;
       position:relative;
-      width:75%;
       font-size:0.8em;
       line-height:1.2em; /*white-space:nowrap;*/
       text-overflow:ellipsis;
@@ -100,8 +96,7 @@
   }
 
   .created {
-    position: absolute;
-    top: 40px;
+    top: 10px;
     font-size: 0.8em;
     font-style: italic;
   }
