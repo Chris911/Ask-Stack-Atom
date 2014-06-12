@@ -25,53 +25,13 @@ class AskStackResultView extends ScrollView
     html = ''
 
     for question in answersJson['items']
-      questionHtml = @renderQuestion(question)
+      questionHtml = @renderQuestionHeader(question)
       html += questionHtml
 
-    test = '''
-<div class="ui-result">
-
-	<h2 class="title">
-		<a class="underline" href="javascript:void(0);">
-			<span class="title-string">"Implements Runnable" vs. "extends Thread"</span>
-		</a>
-		<div class="score"><p> 488 </p></div>
-	</h2>
-	<div class="tags">
-	    <span class="label label-info"><a href="#/tag/java">java</a></span>
-	    <span class="label label-info"><a href="#/tag/multithreading">multithreading</a></span>
-	</div>
-	<div class="created">
-		February 12th 2009, 6:28:46 am
-	</div>
-<p>From what time I've spent with threads in Java, I've found these two ways to write threads.</p>
-<button type="button" class="btn btn-default btn-xs">Copy</button>
-<button type="button" class="btn btn-default btn-xs">Insert</button>
-<pre><code>public class ThreadA implements Runnable {
-    public void run() {
-        //Code
-    }
-}
-//with a "new Thread(threadA).start()" call
-
-
-public class ThreadB extends Thread {
-    public ThreadB() {
-        super("ThreadB");
-    }
-    public void run() {
-        //Code
-    }
-}
-//with a "threadB.start()" call
-</code>
-                    </pre>
-</div>
-    '''
     @html(html)
 
-  renderQuestion: (question) ->
-    html = "<div class=\"ui-result\">
+  renderQuestionHeader: (question) ->
+    html = "<div class=\"ui-result\" id=\"#{question['question_id']}\">
       <h2 class=\"title\">
       <a class=\"underline\" href=\"#{question['link']}\">
         <span class=\"title-string\">#{question['title']}</span>
@@ -86,3 +46,8 @@ public class ThreadB extends Thread {
       html += "<span class=\"label label-info\">#{tag}</span>\n"
     html += "</div>
     </div>"
+
+  renderQuestionBody: (question) ->
+    div = document.createElement('div');
+    div.innerHTML = "<h3>Question</h3> #{question['body']}"
+    document.getElementById("#{question['question_id']}").appendChild(div)
