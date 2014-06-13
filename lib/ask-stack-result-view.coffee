@@ -45,6 +45,14 @@ class AskStackResultView extends ScrollView
     for tag in question['tags']
       html += "<span class=\"label label-info\">#{tag}</span>\n"
     html += "</div>
+    <ul class=\"nav nav-tabs nav-justified\">
+      <li class=\"active\"><a href=\"#question\" data-toggle=\"tab\">Question</a></li>
+      <li><a href=\"#answers\" data-toggle=\"tab\">Answers</a></li>
+    </ul>
+    <div class=\"tab-content\">
+      <div class=\"tab-pane active\" id=\"question\">...</div>
+      <div class=\"tab-pane\" id=\"answers\">ANSWERS</div>
+    </div>
     </div>"
 
   renderQuestionBody: (question) ->
