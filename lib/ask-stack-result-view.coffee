@@ -31,10 +31,11 @@ class AskStackResultView extends ScrollView
     @html(html)
 
   renderQuestionHeader: (question) ->
-    html = "<div class=\"ui-result\" id=\"#{question['question_id']}\">
+    html = "
+    <div class=\"ui-result\" id=\"#{question['question_id']}\">
       <h2 class=\"title\">
-      <a class=\"underline\" href=\"#{question['link']}\">
-        <span class=\"title-string\">#{question['title']}</span>
+      <a class=\"underline title-string\" href=\"#{question['link']}\">
+        #{question['title']}
       </a>
       <div class=\"score\"><p>#{question['score']}</p></div>
     </h2>
