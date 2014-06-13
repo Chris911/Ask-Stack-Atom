@@ -2,7 +2,7 @@ https = require 'https'
 zlib = require 'zlib'
 
 module.exports =
-class AskStack
+class AskStackApiClient
   constructor: ->
       @question = ""
       @tag = ""
