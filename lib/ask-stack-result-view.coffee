@@ -1,6 +1,6 @@
 {$, $$$, ScrollView} = require 'atom'
 
-require './bootstrap/bootstrap.min.js'
+require './ext/bootstrap.min.js'
 
 module.exports =
 class AskStackResultView extends ScrollView

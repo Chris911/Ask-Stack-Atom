@@ -1,5 +1,5 @@
 {
-  "name": "Ask Stack",
+  "name": "Ask-Stack",
   "main": "./lib/ask-stack",
   "version": "0.0.1",
   "description": "Quickly get answers and code samples from Stack Overflow in Atom",
