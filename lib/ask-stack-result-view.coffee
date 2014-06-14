@@ -56,35 +56,36 @@ class AskStackResultView extends ScrollView
 
   renderQuestionBody: (question) ->
     curAnswer = 0
+    quesId = question['question_id']
     div = document.createElement('div');
     div.innerHTML = "
     <ul class=\"nav nav-tabs nav-justified\">
-      <li class=\"active\"><a href=\"#question\" data-toggle=\"tab\">Question</a></li>
-      <li><a href=\"#answers-#{question['question_id']}\" data-toggle=\"tab\">Answers</a></li>
+      <li class=\"active\"><a href=\"#question-#{quesId}\" data-toggle=\"tab\">Question</a></li>
+      <li><a href=\"#answers-#{quesId}\" data-toggle=\"tab\">Answers</a></li>
     </ul>
     <div class=\"tab-content\">
-      <div class=\"tab-pane active\" id=\"question\">#{question['body']}</div>
-      <div class=\"tab-pane\" id=\"answers-#{question['question_id']}\">
-        <center><a href=\"#prev#{question['question_id']}\"><< Prev</a>   <span id=\"curAnswer-#{question['question_id']}\">#{curAnswer+1}</span>/#{question['answers'].length}  <a href=\"#next#{question['question_id']}\">Next >></a> </center>
+      <div class=\"tab-pane active\" id=\"question-#{quesId}\">#{question['body']}</div>
+      <div class=\"tab-pane\" id=\"answers-#{quesId}\">
+        <center><a href=\"#prev#{quesId}\"><< Prev</a>   <span id=\"curAnswer-#{quesId}\">#{curAnswer+1}</span>/#{question['answers'].length}  <a href=\"#next#{quesId}\">Next >></a> </center>
       </div>
     </div>"
-    document.getElementById("#{question['question_id']}").appendChild(div)
-    @addCodeButtons(question['question_id'])
+    document.getElementById("#{quesId}").appendChild(div)
+    @addCodeButtons(quesId)
 
-    @renderAnswerBody(question['answers'][curAnswer], question['question_id'])
+    @renderAnswerBody(question['answers'][curAnswer], quesId)
 
 
-    $("a[href=\"#next#{question['question_id']}\"]").click (event) =>
+    $("a[href=\"#next#{quesId}\"]").click (event) =>
         if curAnswer+1 >= question['answers'].length then curAnswer = 0 else curAnswer += 1
-        $("#answers-#{question['question_id']}").children().last().remove()
-        $("#curAnswer-#{question['question_id']}")[0].innerText = curAnswer+1
-        @renderAnswerBody(question['answers'][curAnswer], question['question_id'])
+        $("#answers-#{quesId}").children().last().remove()
+        $("#curAnswer-#{quesId}")[0].innerText = curAnswer+1
+        @renderAnswerBody(question['answers'][curAnswer], quesId)
 
-    $("a[href=\"#prev#{question['question_id']}\"]").click (event) =>
+    $("a[href=\"#prev#{quesId}\"]").click (event) =>
         if curAnswer-1 < 0 then curAnswer = question['answers'].length-1 else curAnswer -= 1
-        $("#answers-#{question['question_id']}").children().last().remove()
-        $("#curAnswer-#{question['question_id']}")[0].innerText = curAnswer+1
-        @renderAnswerBody(question['answers'][curAnswer], question['question_id'])
+        $("#answers-#{quesId}").children().last().remove()
+        $("#curAnswer-#{quesId}")[0].innerText = curAnswer+1
+        @renderAnswerBody(question['answers'][curAnswer], quesId)
 
   renderAnswerBody: (answer, question_id) ->
     div = $("<div></div>").append(answer['body'])
