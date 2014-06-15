@@ -75,8 +75,7 @@ class AskStackView extends View
   showResults = (answersJson) ->
     uri = 'ask-stack://result-view'
 
-    previousActivePane = atom.workspace.getActivePane()
     atom.workspace.open(uri, split: 'right', searchAllPanes: true).done (askStackResultView) ->
       if askStackResultView instanceof AskStackResultView
         askStackResultView.renderAnswers(answersJson)
-        previousActivePane.activate()
+        atom.workspace.activatePreviousPane()

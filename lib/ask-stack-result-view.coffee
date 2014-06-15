@@ -124,6 +124,7 @@ class AskStackResultView extends ScrollView
       $(btn).click (event) ->
         code = $(this).next('pre').text()
         clipboard.copy(code) if code != undefined
+        atom.workspace.activatePreviousPane()
 
     if type == 'Insert'
       $(btn).click (event) ->
