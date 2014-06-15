@@ -1,4 +1,5 @@
 {$, $$$, ScrollView} = require 'atom'
+hljs = require 'highlight.js'
 
 require './ext/bootstrap.min.js'
 
@@ -70,10 +71,10 @@ class AskStackResultView extends ScrollView
       </div>
     </div>"
     document.getElementById("#{quesId}").appendChild(div)
+    @highlightCode(quesId)
     @addCodeButtons(quesId)
 
     @renderAnswerBody(question['answers'][curAnswer], quesId)
-
 
     $("a[href=\"#next#{quesId}\"]").click (event) =>
         if curAnswer+1 >= question['answers'].length then curAnswer = 0 else curAnswer += 1
@@ -90,11 +91,20 @@ class AskStackResultView extends ScrollView
   renderAnswerBody: (answer, question_id) ->
     div = $("<div></div>").append(answer['body'])
     $("#answers-#{question_id}").append(div)
+
+    @highlightCode("answers-#{question_id}")
     @addCodeButtons("answers-#{question_id}")
+
+  highlightCode: (elem_id) ->
+    pres = document.getElementById(elem_id).getElementsByTagName('pre');
+    for pre in pres
+      code = $(pre).children('code').first()
+      if(code != undefined)
+        codeHl =  hljs.highlightAuto(code.text()).value
+        code.html(codeHl)
 
   addCodeButtons: (elem_id) ->
     pres = document.getElementById(elem_id).getElementsByTagName('pre');
-    #pres = $(elem).siblings('pre')
     for pre in pres
       btnInsert = @genButton('Insert')
       btnCopy = @genButton('Copy')
