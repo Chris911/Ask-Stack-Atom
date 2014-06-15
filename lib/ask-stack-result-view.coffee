@@ -92,7 +92,11 @@ class AskStackResultView extends ScrollView
     @setupClickEvents(question, curAnswer)
 
   renderAnswerBody: (answer, question_id) ->
-    div = $('<div></div>').append(answer['body'])
+    div = $('<div></div>')
+    div.append("<span class=\"label label-success\">Accepted</span>") if answer['is_accepted']
+    score = $("<div class=\"score answer\"><p>#{answer['score']}</p></div>")
+    div.append(score)
+    div.append(answer['body'])
     $("#answers-#{question_id}").append(div)
 
     @highlightCode("answers-#{question_id}")
