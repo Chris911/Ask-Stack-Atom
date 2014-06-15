@@ -27,11 +27,12 @@ class AskStackResultView extends ScrollView
   renderAnswers: (answersJson) ->
     html = ''
 
-    # Render the titles first
+    # Render the question headers first
     for question in answersJson['items']
       questionHtml = @renderQuestionHeader(question)
       html += questionHtml
 
+    # Initial HTML
     @html(html)
 
     # Then render the questions and answers
@@ -55,7 +56,7 @@ class AskStackResultView extends ScrollView
       html += "<span class=\"label label-info\">#{tag}</span>\n"
     html += "</div>
     <div class=\"collapse-button\">
-      <button type=\"button\" class=\"btn btn-info btn-xs\" data-toggle=\"collapse\" data-target=\"#question-body-#{question['question_id']}\">
+      <button id=\"toggle-#{question['question_id']}\" type=\"button\" class=\"btn btn-info btn-xs\" data-toggle=\"collapse\" data-target=\"#question-body-#{question['question_id']}\">
         Show More
       </button>
     </div>
@@ -84,17 +85,7 @@ class AskStackResultView extends ScrollView
 
     @renderAnswerBody(question['answers'][curAnswer], quesId)
 
-    $("a[href=\"#next#{quesId}\"]").click (event) =>
-        if curAnswer+1 >= question['answers'].length then curAnswer = 0 else curAnswer += 1
-        $("#answers-#{quesId}").children().last().remove()
-        $("#curAnswer-#{quesId}")[0].innerText = curAnswer+1
-        @renderAnswerBody(question['answers'][curAnswer], quesId)
-
-    $("a[href=\"#prev#{quesId}\"]").click (event) =>
-        if curAnswer-1 < 0 then curAnswer = question['answers'].length-1 else curAnswer -= 1
-        $("#answers-#{quesId}").children().last().remove()
-        $("#curAnswer-#{quesId}")[0].innerText = curAnswer+1
-        @renderAnswerBody(question['answers'][curAnswer], quesId)
+    @setupClickEvents(question, curAnswer)
 
   renderAnswerBody: (answer, question_id) ->
     div = $("<div></div>").append(answer['body'])
@@ -125,3 +116,24 @@ class AskStackResultView extends ScrollView
         text: text,
         class: 'btn btn-default btn-xs'
     })
+
+  setupClickEvents: (question, curAnswer) ->
+    quesId = question['question_id']
+    # This has to be done after the initial HTML is rendered
+    $("#toggle-#{quesId}").click (event) ->
+      if ( $("#question-body-#{quesId}").hasClass('in') )
+        $(this).text('Show More')
+      else
+        $(this).text('Show Less')
+
+    $("a[href=\"#next#{quesId}\"]").click (event) =>
+        if curAnswer+1 >= question['answers'].length then curAnswer = 0 else curAnswer += 1
+        $("#answers-#{quesId}").children().last().remove()
+        $("#curAnswer-#{quesId}")[0].innerText = curAnswer+1
+        @renderAnswerBody(question['answers'][curAnswer], quesId)
+
+    $("a[href=\"#prev#{quesId}\"]").click (event) =>
+        if curAnswer-1 < 0 then curAnswer = question['answers'].length-1 else curAnswer -= 1
+        $("#answers-#{quesId}").children().last().remove()
+        $("#curAnswer-#{quesId}")[0].innerText = curAnswer+1
+        @renderAnswerBody(question['answers'][curAnswer], quesId)
