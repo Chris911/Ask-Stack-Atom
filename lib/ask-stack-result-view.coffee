@@ -27,15 +27,16 @@ class AskStackResultView extends ScrollView
   renderAnswers: (answersJson) ->
     html = ''
 
+    # Render the titles first
     for question in answersJson['items']
       questionHtml = @renderQuestionHeader(question)
       html += questionHtml
 
     @html(html)
 
-    @renderQuestionBody(answersJson['items'][0])
-    @renderQuestionBody(answersJson['items'][1])
-    @renderQuestionBody(answersJson['items'][2])
+    # Then render the questions and answers
+    for question in answersJson['items']
+      @renderQuestionBody(question)
 
   renderQuestionHeader: (question) ->
     html = "
@@ -53,12 +54,19 @@ class AskStackResultView extends ScrollView
     for tag in question['tags']
       html += "<span class=\"label label-info\">#{tag}</span>\n"
     html += "</div>
+    <div class=\"collapse-button\">
+      <button type=\"button\" class=\"btn btn-info btn-xs\" data-toggle=\"collapse\" data-target=\"#question-body-#{question['question_id']}\">
+        Show More
+      </button>
+    </div>
     </div>"
 
   renderQuestionBody: (question) ->
     curAnswer = 0
     quesId = question['question_id']
     div = document.createElement('div');
+    div.setAttribute( "id", "question-body-#{question['question_id']}")
+    div.setAttribute( "class", "collapse" );
     div.innerHTML = "
     <ul class=\"nav nav-tabs nav-justified\">
       <li class=\"active\"><a href=\"#question-#{quesId}\" data-toggle=\"tab\">Question</a></li>
