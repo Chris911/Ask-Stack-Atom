@@ -25,19 +25,22 @@ class AskStackResultView extends ScrollView
     @subscribe this, 'core:move-down', => @scrollDown()
 
   renderAnswers: (answersJson) ->
-    html = ''
+    if answersJson['items'].length == 0
+      @html("<br /><center>Your search returned no matches.</center>")
+    else
+      html = ''
 
-    # Render the question headers first
-    for question in answersJson['items']
-      questionHtml = @renderQuestionHeader(question)
-      html += questionHtml
+      # Render the question headers first
+      for question in answersJson['items']
+        questionHtml = @renderQuestionHeader(question)
+        html += questionHtml
 
-    # Initial HTML
-    @html(html)
+      # Initial HTML
+      @html(html)
 
-    # Then render the questions and answers
-    for question in answersJson['items']
-      @renderQuestionBody(question)
+      # Then render the questions and answers
+      for question in answersJson['items']
+        @renderQuestionBody(question)
 
   renderQuestionHeader: (question) ->
     html = "
