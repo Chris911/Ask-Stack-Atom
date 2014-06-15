@@ -1,5 +1,6 @@
 {$, $$$, ScrollView} = require 'atom'
 hljs = require 'highlight.js'
+clipboard = require 'copy-paste'
 
 require './ext/bootstrap.min.js'
 
@@ -108,17 +109,31 @@ class AskStackResultView extends ScrollView
   addCodeButtons: (elem_id) ->
     pres = document.getElementById(elem_id).getElementsByTagName('pre');
     for pre in pres
-      btnInsert = @genButton('Insert')
-      btnCopy = @genButton('Copy')
+      btnInsert = @genCodeButton('Insert')
+      btnCopy = @genCodeButton('Copy')
       $(pre).prev().after(btnInsert)
       $(pre).prev().after(btnCopy)
 
-  genButton: (text) ->
-    $('<button/>',
+  genCodeButton: (type) ->
+    btn = $('<button/>',
     {
-        text: text,
+        text: type,
         class: 'btn btn-default btn-xs'
     })
+    if type == 'Copy'
+      $(btn).click (event) ->
+        code = $(this).next('pre').text()
+        clipboard.copy(code) if code != undefined
+
+    if type == 'Insert'
+      $(btn).click (event) ->
+        code = $(this).next().next('pre').text()
+        if code != undefined
+          atom.workspace.activatePreviousPane()
+          editor = atom.workspace.activePaneItem
+          editor.insertText(code)
+
+    return btn
 
   setupClickEvents: (question, curAnswer) ->
     quesId = question['question_id']

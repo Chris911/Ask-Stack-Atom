@@ -10,6 +10,7 @@
     "atom": ">0.50.0"
   },
   "dependencies": {
-    "highlight.js": "*"
+    "highlight.js": "*",
+    "copy-paste": "*"
   }
 }
