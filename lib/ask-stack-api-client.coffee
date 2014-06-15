@@ -4,8 +4,8 @@ zlib = require 'zlib'
 module.exports =
 class AskStackApiClient
   constructor: ->
-      @question = ""
-      @tag = ""
+      @question = ''
+      @tag = ''
 
   search: (callback) ->
       options =
@@ -18,23 +18,23 @@ class AskStackApiClient
         "filter=!b0OfNKD*3O569e"
         method: 'GET'
         headers:
-          "User-Agent": "Atom-Ask-Stack"
-          "accept-encoding" : "gzip"
+          'User-Agent': 'Atom-Ask-Stack'
+          'accept-encoding' : 'gzip'
 
       request = https.request options, (res) ->
         buffer = []
         gunzip = zlib.createGunzip();
         res.pipe(gunzip)
 
-        gunzip.on "data", (chunk) ->
+        gunzip.on 'data', (chunk) ->
           buffer.push(chunk.toString())
-        gunzip.on "end", ->
+        gunzip.on 'end', ->
           #debugger
           body = buffer.join("")
           response = JSON.parse(body)
           callback(response)
 
-        gunzip.on "error", (e) ->
+        gunzip.on 'error', (e) ->
           console.log "Error: #{e.message}"
 
       request.end()

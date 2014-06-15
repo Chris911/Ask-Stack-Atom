@@ -8,25 +8,25 @@ AskStackResultView = require './ask-stack-result-view'
 module.exports =
 class AskStackView extends View
   @content: ->
-    @div class: "ask-stack overlay from-top padded", =>
-      @div class: "inset-panel", =>
-        @div class: "panel-heading", =>
-          @span "Ask StackOverflow"
-        @div class: "panel-body padded", =>
+    @div class: 'ask-stack overlay from-top padded', =>
+      @div class: 'inset-panel', =>
+        @div class: 'panel-heading', =>
+          @span 'Ask StackOverflow'
+        @div class: 'panel-body padded', =>
           @div outlet: 'signupForm', =>
             @subview 'questionEditor', new EditorView(mini:true, placeholderText: 'Question (eg. Sort array)')
-            @subview 'languageEditor', new EditorView(mini:true, placeholderText: 'Language (eg. Ruby)')
+            @subview 'languageEditor', new EditorView(mini:true, placeholderText: 'Language / Tags (eg. Ruby;Rails)')
             @div class: 'pull-right', =>
-              @button outlet: 'askButton', class: 'btn btn-primary', "Ask!"
+              @button outlet: 'askButton', class: 'btn btn-primary', 'Ask!'
           @div outlet: 'progressIndicator', =>
             @span class: 'loading loading-spinner-medium'
-        @div class: "panel-body padded", =>
+        @div class: 'panel-body padded', =>
           @div outlet: 'resultsPanel', =>
 
   initialize: (serializeState) ->
     @handleEvents()
     @askStack = null
-    atom.workspaceView.command "ask-stack:presentPanel", => @presentPanel()
+    atom.workspaceView.command 'ask-stack:ask-question', => @presentPanel()
 
     atom.workspace.registerOpener (uriToOpen) ->
       try
@@ -73,7 +73,7 @@ class AskStackView extends View
       showResults(response)
 
   showResults = (answersJson) ->
-    uri = "ask-stack://result-view"
+    uri = 'ask-stack://result-view'
 
     previousActivePane = atom.workspace.getActivePane()
     atom.workspace.open(uri, split: 'right', searchAllPanes: true).done (askStackResultView) ->

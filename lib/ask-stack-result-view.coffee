@@ -15,10 +15,10 @@ class AskStackResultView extends ScrollView
     @unsubscribe()
 
   getTitle: ->
-    "Ask Stack Results"
+    'Ask Stack Results'
 
   getUri: ->
-    "ask-stack://result-view"
+    'ask-stack://result-view'
 
   handleEvents: ->
     @subscribe this, 'core:move-up', => @scrollUp()
@@ -26,7 +26,7 @@ class AskStackResultView extends ScrollView
 
   renderAnswers: (answersJson) ->
     if answersJson['items'].length == 0
-      @html("<br /><center>Your search returned no matches.</center>")
+      @html('<br /><center>Your search returned no matches.</center>')
     else
       html = ''
 
@@ -91,7 +91,7 @@ class AskStackResultView extends ScrollView
     @setupClickEvents(question, curAnswer)
 
   renderAnswerBody: (answer, question_id) ->
-    div = $("<div></div>").append(answer['body'])
+    div = $('<div></div>').append(answer['body'])
     $("#answers-#{question_id}").append(div)
 
     @highlightCode("answers-#{question_id}")

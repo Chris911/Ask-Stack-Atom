@@ -5,7 +5,7 @@
     'submenu': [
       'label': 'Ask Stack'
       'submenu': [
-        { 'label': 'Ask Stack', 'command': 'ask-stack:presentPanel' }
+        { 'label': 'Ask Question', 'command': 'ask-stack:ask-question' }
       ]
     ]
   }
