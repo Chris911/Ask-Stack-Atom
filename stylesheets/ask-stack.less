@@ -26,6 +26,25 @@
   box-shadow: @arguments;
 }
 
+.load-more {
+  position: relative;
+  margin-top: 20px;
+  margin-left: 60px;
+  text-align: center;
+  span {
+    color: #A2A1A1;
+    &:hover { color: #DCDCDC; }
+  }
+  a { text-decoration: none; }
+}
+
+.progressIndicator {
+  margin-left: auto;
+  margin-right: auto;
+  width: 0%;
+  display: none;
+}
+
 .ui-result {
   position: relative;
   background: @resultBgColor;
@@ -165,6 +184,12 @@
     color: #fff;
     text-align: center;
     font-size:1.2em;
+  }
+
+  .answer-link {
+    position: relative;
+    float: right;
+    margin-left: 5px;
   }
 
   pre {

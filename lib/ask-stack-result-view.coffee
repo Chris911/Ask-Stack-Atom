@@ -1,4 +1,5 @@
 {$, $$$, ScrollView} = require 'atom'
+AskStackApiClient = require './ask-stack-api-client'
 hljs = require 'highlight.js'
 clipboard = require 'copy-paste'
 
@@ -25,16 +26,22 @@ class AskStackResultView extends ScrollView
     @subscribe this, 'core:move-up', => @scrollUp()
     @subscribe this, 'core:move-down', => @scrollDown()
 
-  renderAnswers: (answersJson) ->
+  renderAnswers: (answersJson, loadMore = false) ->
     if answersJson['items'].length == 0
       @html('<br /><center>Your search returned no matches.</center>')
     else
-      html = ''
+      html = if loadMore then @html() else ''
 
       # Render the question headers first
       for question in answersJson['items']
         questionHtml = @renderQuestionHeader(question)
         html += questionHtml
+
+      loadMoreBtn = "<div id='load-more' class='load-more'><a href='#loadmore'><span>Load More...</span></a></div>"
+      progressIndicator = "<div id=\"progressIndicator\" class=\"progressIndicator\"><span class=\"loading loading-spinner-medium\"></span></div>"
+
+      html += loadMoreBtn
+      html += progressIndicator
 
       # Initial HTML
       @html(html)
@@ -42,6 +49,17 @@ class AskStackResultView extends ScrollView
       # Then render the questions and answers
       for question in answersJson['items']
         @renderQuestionBody(question)
+
+      $("a[href=\"#loadmore\"]").click (event) =>
+          if answersJson['has_more']
+            $('#progressIndicator').show()
+            $('#load-more').remove()
+            AskStackApiClient.page = AskStackApiClient.page + 1
+            AskStackApiClient.search (response) =>
+              $('#progressIndicator').remove()
+              @renderAnswers(response, true)
+          else
+            $('#load-more').children().children('span').text('No more results to load.')
 
   renderQuestionHeader: (question) ->
     html = "
@@ -93,6 +111,7 @@ class AskStackResultView extends ScrollView
 
   renderAnswerBody: (answer, question_id) ->
     div = $('<div></div>')
+    div.append("<a href=\"#{answer['link']}\"><span class=\"answer-link\">➚</span></a>")
     div.append("<span class=\"label label-success\">Accepted</span>") if answer['is_accepted']
     score = $("<div class=\"score answer\"><p>#{answer['score']}</p></div>")
     div.append(score)

@@ -3,14 +3,17 @@ zlib = require 'zlib'
 
 module.exports =
 class AskStackApiClient
-  constructor: ->
-      @question = ''
-      @tag = ''
 
-  search: (callback) ->
+  # Properties
+  @question = ''
+  @tag = ''
+  @page = 1
+
+  @search: (callback) ->
       options =
         hostname: 'api.stackexchange.com'
         path: "/2.2/search/advanced?pagesize=5&" +
+        "page=#{@page}&" +
         "order=desc&" + "sort=votes&" +
         "q=#{encodeURIComponent(@question.trim())}&" +
         "tagged=#{encodeURIComponent(@tag.trim())}&" +
@@ -38,3 +41,8 @@ class AskStackApiClient
           console.log "Error: #{e.message}"
 
       request.end()
+
+  @resetInputs: ->
+    @question = ''
+    @tag = ''
+    @page = 1

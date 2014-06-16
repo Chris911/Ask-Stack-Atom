@@ -2,6 +2,7 @@ url = require 'url'
 
 {EditorView, View} = require 'atom'
 
+AskStack = require './ask-stack'
 AskStackApiClient = require './ask-stack-api-client'
 AskStackResultView = require './ask-stack-result-view'
 
@@ -53,8 +54,6 @@ class AskStackView extends View
     @languageEditor.on 'core:cancel', => @detach()
 
   presentPanel: ->
-    @askStackApiClient = new AskStackApiClient()
-
     this.show()
     atom.workspaceView.append(this)
 
@@ -65,9 +64,10 @@ class AskStackView extends View
   askStackRequest: ->
     @progressIndicator.show()
 
-    @askStackApiClient.question = @questionEditor.getText()
-    @askStackApiClient.tag = @languageEditor.getText()
-    @askStackApiClient.search (response) =>
+    AskStackApiClient.resetInputs()
+    AskStackApiClient.question = @questionEditor.getText()
+    AskStackApiClient.tag = @languageEditor.getText()
+    AskStackApiClient.search (response) =>
       @progressIndicator.hide()
       this.hide()
       showResults(response)
