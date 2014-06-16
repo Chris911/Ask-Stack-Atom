@@ -144,10 +144,13 @@ class AskStackResultView extends ScrollView
     quesId = question['question_id']
     # This has to be done after the initial HTML is rendered
     $("#toggle-#{quesId}").click (event) ->
+      btn = $(this)
       if ( $("#question-body-#{quesId}").hasClass('in') )
+        btn.parents("##{quesId}").append(btn.parent())
         $(this).text('Show More')
       else
-        $(this).text('Show Less')
+        btn.parent().siblings("#question-body-#{quesId}").append(btn.parent())
+        btn.text('Show Less')
 
     $("a[href=\"#next#{quesId}\"]").click (event) =>
         if curAnswer+1 >= question['answers'].length then curAnswer = 0 else curAnswer += 1
