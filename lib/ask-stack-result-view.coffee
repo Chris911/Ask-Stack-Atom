@@ -27,24 +27,19 @@ class AskStackResultView extends ScrollView
     @subscribe this, 'core:move-down', => @scrollDown()
 
   renderAnswers: (answersJson, loadMore = false) ->
+    # Clean up HTML if we are loading a new set of answers
+    @html('') unless loadMore
+    
     if answersJson['items'].length == 0
-      @mainView.append('<br /><center>Your search returned no matches.</center>')
+      this.append('<br><center>Your search returned no matches.</center>')
     else
-      html = if loadMore then @html() else ''
-      
       # Render the question headers first
       for question in answersJson['items']
         questionHtml = @renderQuestionHeader(question)
-        html += questionHtml
+        this.append(questionHtml)
 
-      loadMoreBtn = "<div id='load-more' class='load-more'><a href='#loadmore'><span>Load More...</span></a></div>"
-      progressIndicator = "<div id='progressIndicator' class='progressIndicator'><span class='loading loading-spinner-medium'></span></div>"
-
-      html += loadMoreBtn
-      html += progressIndicator
-
-      # Initial HTML
-      @html(html)
+      this.append("<div id='load-more' class='load-more'><a href='#loadmore'><span>Load More...</span></a></div>")
+      this.append("<div id='progressIndicator' class='progressIndicator'><span class='loading loading-spinner-medium'></span></div>")
 
       # Then render the questions and answers
       for question in answersJson['items']
