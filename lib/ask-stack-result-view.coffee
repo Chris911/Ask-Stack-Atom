@@ -8,7 +8,7 @@ require './ext/bootstrap.min.js'
 module.exports =
 class AskStackResultView extends ScrollView
   @content: ->
-    @div class: 'ask-stack-result native-key-bindings', tabindex: -1
+    @div outlet:'mainView', class: 'ask-stack-result native-key-bindings', tabindex: -1
 
   initialize: ->
       super
@@ -32,6 +32,7 @@ class AskStackResultView extends ScrollView
     else
       html = if loadMore then @html() else ''
 
+      test = @view()
       # Render the question headers first
       for question in answersJson['items']
         questionHtml = @renderQuestionHeader(question)
