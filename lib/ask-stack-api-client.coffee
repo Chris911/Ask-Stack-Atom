@@ -8,13 +8,15 @@ class AskStackApiClient
   @question = ''
   @tag = ''
   @page = 1
+  @sort_by = 'votes'
 
   @search: (callback) ->
       options =
         hostname: 'api.stackexchange.com'
         path: "/2.2/search/advanced?pagesize=5&" +
         "page=#{@page}&" +
-        "order=desc&" + "sort=votes&" +
+        "order=desc&" +
+        "sort=#{@sort_by}&" +
         "q=#{encodeURIComponent(@question.trim())}&" +
         "tagged=#{encodeURIComponent(@tag.trim())}&" +
         "site=stackoverflow&" +
@@ -46,3 +48,4 @@ class AskStackApiClient
     @question = ''
     @tag = ''
     @page = 1
+    @sort_by = 'votes'

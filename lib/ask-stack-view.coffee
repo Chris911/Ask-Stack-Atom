@@ -14,15 +14,20 @@ class AskStackView extends View
         @div class: 'panel-heading', =>
           @span 'Ask StackOverflow'
         @div class: 'panel-body padded', =>
-          @div outlet: 'signupForm', =>
+          @div =>
             @subview 'questionEditor', new EditorView(mini:true, placeholderText: 'Question (eg. Sort array)')
             @subview 'languageEditor', new EditorView(mini:true, placeholderText: 'Language / Tags (eg. Ruby;Rails)')
             @div class: 'pull-right', =>
-              @button outlet: 'askButton', class: 'btn btn-primary', 'Ask!'
+              @button outlet: 'askButton', class: 'btn btn-primary', ' Ask! '
+            @div class: 'pull-left', =>
+              @label 'Sort by:'
+              @raw '<br>'
+              @label for: 'relevance', class: 'radio-label', 'Relevance: '
+              @input outlet: 'sortByRelevance', id: 'relevance', type: 'radio', name: 'sort_by', value: 'relevance', checked: 'checked'
+              @label for: 'votes', class: 'radio-label last', 'Votes: '
+              @input outlet: 'sortByVote', id: 'votes', type: 'radio', name: 'sort_by', value: 'votes'
           @div outlet: 'progressIndicator', =>
             @span class: 'loading loading-spinner-medium'
-        @div class: 'panel-body padded', =>
-          @div outlet: 'resultsPanel', =>
 
   initialize: (serializeState) ->
     @handleEvents()
@@ -58,7 +63,6 @@ class AskStackView extends View
     atom.workspaceView.append(this)
 
     @progressIndicator.hide()
-    @resultsPanel.hide()
     @questionEditor.focus()
 
   askStackRequest: ->
@@ -67,6 +71,7 @@ class AskStackView extends View
     AskStackApiClient.resetInputs()
     AskStackApiClient.question = @questionEditor.getText()
     AskStackApiClient.tag = @languageEditor.getText()
+    AskStackApiClient.sort_by = if @sortByVote.is(':checked') then 'votes' else 'relevance'
     AskStackApiClient.search (response) =>
       @progressIndicator.hide()
       this.hide()
