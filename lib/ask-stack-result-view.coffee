@@ -8,7 +8,7 @@ require './ext/bootstrap.min.js'
 module.exports =
 class AskStackResultView extends ScrollView
   @content: ->
-    @div outlet:'mainView', class: 'ask-stack-result native-key-bindings', tabindex: -1
+    @div class: 'ask-stack-result native-key-bindings', tabindex: -1
 
   initialize: ->
       super
@@ -28,18 +28,17 @@ class AskStackResultView extends ScrollView
 
   renderAnswers: (answersJson, loadMore = false) ->
     if answersJson['items'].length == 0
-      @html('<br /><center>Your search returned no matches.</center>')
+      @mainView.append('<br /><center>Your search returned no matches.</center>')
     else
       html = if loadMore then @html() else ''
-
-      test = @view()
+      
       # Render the question headers first
       for question in answersJson['items']
         questionHtml = @renderQuestionHeader(question)
         html += questionHtml
 
       loadMoreBtn = "<div id='load-more' class='load-more'><a href='#loadmore'><span>Load More...</span></a></div>"
-      progressIndicator = "<div id=\"progressIndicator\" class=\"progressIndicator\"><span class=\"loading loading-spinner-medium\"></span></div>"
+      progressIndicator = "<div id='progressIndicator' class='progressIndicator'><span class='loading loading-spinner-medium'></span></div>"
 
       html += loadMoreBtn
       html += progressIndicator
@@ -51,7 +50,7 @@ class AskStackResultView extends ScrollView
       for question in answersJson['items']
         @renderQuestionBody(question)
 
-      $("a[href=\"#loadmore\"]").click (event) =>
+      $("a[href='#loadmore']").click (event) =>
           if answersJson['has_more']
             $('#progressIndicator').show()
             $('#load-more').remove()
@@ -64,22 +63,22 @@ class AskStackResultView extends ScrollView
 
   renderQuestionHeader: (question) ->
     html = "
-    <div class=\"ui-result\" id=\"#{question['question_id']}\">
-      <h2 class=\"title\">
-      <a class=\"underline title-string\" href=\"#{question['link']}\">
+    <div class='ui-result' id='#{question['question_id']}'>
+      <h2 class='title'>
+      <a class='underline title-string' href='#{question['link']}'>
         #{question['title']}
       </a>
-      <div class=\"score\"><p>#{question['score']}</p></div>
+      <div class='score'><p>#{question['score']}</p></div>
     </h2>
-    <div class=\"created\">
+    <div class='created'>
       #{new Date(question['creation_date'] * 1000).toLocaleString()}
     </div>
-    <div class=\"tags\">"
+    <div class='tags'>"
     for tag in question['tags']
-      html += "<span class=\"label label-info\">#{tag}</span>\n"
+      html += "<span class='label label-info'>#{tag}</span>\n"
     html += "</div>
-    <div class=\"collapse-button\">
-      <button id=\"toggle-#{question['question_id']}\" type=\"button\" class=\"btn btn-info btn-xs\" data-toggle=\"collapse\" data-target=\"#question-body-#{question['question_id']}\">
+    <div class='collapse-button'>
+      <button id='toggle-#{question['question_id']}' type='button' class='btn btn-info btn-xs' data-toggle='collapse' data-target='#question-body-#{question['question_id']}'>
         Show More
       </button>
     </div>
@@ -92,14 +91,14 @@ class AskStackResultView extends ScrollView
     div.setAttribute( "id", "question-body-#{question['question_id']}")
     div.setAttribute( "class", "collapse" );
     div.innerHTML = "
-    <ul class=\"nav nav-tabs nav-justified\">
-      <li class=\"active\"><a href=\"#question-#{quesId}\" data-toggle=\"tab\">Question</a></li>
-      <li><a href=\"#answers-#{quesId}\" data-toggle=\"tab\">Answers</a></li>
+    <ul class='nav nav-tabs nav-justified'>
+      <li class='active'><a href='#question-#{quesId}' data-toggle='tab'>Question</a></li>
+      <li><a href='#answers-#{quesId}' data-toggle='tab'>Answers</a></li>
     </ul>
-    <div class=\"tab-content\">
-      <div class=\"tab-pane active\" id=\"question-#{quesId}\">#{question['body']}</div>
-      <div class=\"tab-pane\" id=\"answers-#{quesId}\">
-        <center><a href=\"#prev#{quesId}\"><< Prev</a>   <span id=\"curAnswer-#{quesId}\">#{curAnswer+1}</span>/#{question['answers'].length}  <a href=\"#next#{quesId}\">Next >></a> </center>
+    <div class='tab-content'>
+      <div class='tab-pane active' id='question-#{quesId}'>#{question['body']}</div>
+      <div class='tab-pane' id='answers-#{quesId}'>
+        <center><a href='#prev#{quesId}'><< Prev</a>   <span id='curAnswer-#{quesId}'>#{curAnswer+1}</span>/#{question['answers'].length}  <a href='#next#{quesId}'>Next >></a> </center>
       </div>
     </div>"
     document.getElementById("#{quesId}").appendChild(div)
@@ -112,9 +111,9 @@ class AskStackResultView extends ScrollView
 
   renderAnswerBody: (answer, question_id) ->
     div = $('<div></div>')
-    div.append("<a href=\"#{answer['link']}\"><span class=\"answer-link\">➚</span></a>")
-    div.append("<span class=\"label label-success\">Accepted</span>") if answer['is_accepted']
-    score = $("<div class=\"score answer\"><p>#{answer['score']}</p></div>")
+    div.append("<a href='#{answer['link']}'><span class='answer-link'>➚</span></a>")
+    div.append("<span class='label label-success'>Accepted</span>") if answer['is_accepted']
+    score = $("<div class='score answer'><p>#{answer['score']}</p></div>")
     div.append(score)
     div.append(answer['body'])
     $("#answers-#{question_id}").append(div)
@@ -172,13 +171,13 @@ class AskStackResultView extends ScrollView
         btn.parent().siblings("#question-body-#{quesId}").append(btn.parent())
         btn.text('Show Less')
 
-    $("a[href=\"#next#{quesId}\"]").click (event) =>
+    $("a[href='#next#{quesId}']").click (event) =>
         if curAnswer+1 >= question['answers'].length then curAnswer = 0 else curAnswer += 1
         $("#answers-#{quesId}").children().last().remove()
         $("#curAnswer-#{quesId}")[0].innerText = curAnswer+1
         @renderAnswerBody(question['answers'][curAnswer], quesId)
 
-    $("a[href=\"#prev#{quesId}\"]").click (event) =>
+    $("a[href='#prev#{quesId}']").click (event) =>
         if curAnswer-1 < 0 then curAnswer = question['answers'].length-1 else curAnswer -= 1
         $("#answers-#{quesId}").children().last().remove()
         $("#curAnswer-#{quesId}")[0].innerText = curAnswer+1
