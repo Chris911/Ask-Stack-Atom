@@ -29,7 +29,7 @@ class AskStackResultView extends ScrollView
   renderAnswers: (answersJson, loadMore = false) ->
     # Clean up HTML if we are loading a new set of answers
     @html('') unless loadMore
-    
+
     if answersJson['items'].length == 0
       this.append('<br><center>Your search returned no matches.</center>')
     else
@@ -60,23 +60,24 @@ class AskStackResultView extends ScrollView
     html = "
     <div class='ui-result' id='#{question['question_id']}'>
       <h2 class='title'>
-      <a class='underline title-string' href='#{question['link']}'>
-        #{question['title']}
-      </a>
+        <a class='underline title-string' href='#{question['link']}'>
+          #{question['title']}
+        </a>
       <div class='score'><p>#{question['score']}</p></div>
-    </h2>
-    <div class='created'>
-      #{new Date(question['creation_date'] * 1000).toLocaleString()}
-    </div>
-    <div class='tags'>"
+      </h2>
+      <div class='created'>
+        #{new Date(question['creation_date'] * 1000).toLocaleString()}
+      </div>
+      <div class='tags'>"
     for tag in question['tags']
       html += "<span class='label label-info'>#{tag}</span>\n"
-    html += "</div>
-    <div class='collapse-button'>
-      <button id='toggle-#{question['question_id']}' type='button' class='btn btn-info btn-xs' data-toggle='collapse' data-target='#question-body-#{question['question_id']}'>
+    html += "
+      </div>
+      <div class='collapse-button'>
+        <button id='toggle-#{question['question_id']}' type='button' class='btn btn-info btn-xs' data-toggle='collapse' data-target='#question-body-#{question['question_id']}'>
         Show More
-      </button>
-    </div>
+        </button>
+      </div>
     </div>"
 
   renderQuestionBody: (question) ->
@@ -96,7 +97,7 @@ class AskStackResultView extends ScrollView
         <center><a href='#prev#{quesId}'><< Prev</a>   <span id='curAnswer-#{quesId}'>#{curAnswer+1}</span>/#{question['answers'].length}  <a href='#next#{quesId}'>Next >></a> </center>
       </div>
     </div>"
-    document.getElementById("#{quesId}").appendChild(div)
+    $("##{quesId}").append(div)
     @highlightCode(quesId)
     @addCodeButtons(quesId)
 
@@ -108,9 +109,9 @@ class AskStackResultView extends ScrollView
     div = $('<div></div>')
     div.append("<a href='#{answer['link']}'><span class='answer-link'>➚</span></a>")
     div.append("<span class='label label-success'>Accepted</span>") if answer['is_accepted']
-    score = $("<div class='score answer'><p>#{answer['score']}</p></div>")
-    div.append(score)
+    div.append("<div class='score answer'><p>#{answer['score']}</p></div>")
     div.append(answer['body'])
+
     $("#answers-#{question_id}").append(div)
 
     @highlightCode("answers-#{question_id}")
@@ -156,7 +157,8 @@ class AskStackResultView extends ScrollView
 
   setupClickEvents: (question, curAnswer) ->
     quesId = question['question_id']
-    # This has to be done after the initial HTML is rendered
+
+    # Question toggle button
     $("#toggle-#{quesId}").click (event) ->
       btn = $(this)
       if ( $("#question-body-#{quesId}").hasClass('in') )
@@ -166,6 +168,7 @@ class AskStackResultView extends ScrollView
         btn.parent().siblings("#question-body-#{quesId}").append(btn.parent())
         btn.text('Show Less')
 
+    # Answers navigation
     $("a[href='#next#{quesId}']").click (event) =>
         if curAnswer+1 >= question['answers'].length then curAnswer = 0 else curAnswer += 1
         $("#answers-#{quesId}").children().last().remove()
