@@ -35,8 +35,7 @@ class AskStackResultView extends ScrollView
     else
       # Render the question headers first
       for question in answersJson['items']
-        questionHtml = @renderQuestionHeader(question)
-        this.append(questionHtml)
+        @renderQuestionHeader(question)
 
       this.append("<div id='load-more' class='load-more'><a href='#loadmore'><span>Load More...</span></a></div>")
       this.append("<div id='progressIndicator' class='progressIndicator'><span class='loading loading-spinner-medium'></span></div>")
@@ -79,14 +78,16 @@ class AskStackResultView extends ScrollView
         </button>
       </div>
     </div>"
+    this.append(html)
 
   renderQuestionBody: (question) ->
     curAnswer = 0
     quesId = question['question_id']
-    div = document.createElement('div');
-    div.setAttribute( "id", "question-body-#{question['question_id']}")
-    div.setAttribute( "class", "collapse" );
-    div.innerHTML = "
+    div = $('<div></div>', {
+      id: "question-body-#{question['question_id']}"
+      class: "collapse"
+      })
+    div.html("
     <ul class='nav nav-tabs nav-justified'>
       <li class='active'><a href='#question-#{quesId}' data-toggle='tab'>Question</a></li>
       <li><a href='#answers-#{quesId}' data-toggle='tab'>Answers</a></li>
@@ -96,7 +97,7 @@ class AskStackResultView extends ScrollView
       <div class='tab-pane' id='answers-#{quesId}'>
         <center><a href='#prev#{quesId}'><< Prev</a>   <span id='curAnswer-#{quesId}'>#{curAnswer+1}</span>/#{question['answers'].length}  <a href='#next#{quesId}'>Next >></a> </center>
       </div>
-    </div>"
+    </div>")
     $("##{quesId}").append(div)
     @highlightCode(quesId)
     @addCodeButtons(quesId)

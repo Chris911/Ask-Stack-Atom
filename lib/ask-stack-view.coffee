@@ -12,7 +12,7 @@ class AskStackView extends View
     @div class: 'ask-stack overlay from-top padded', =>
       @div class: 'inset-panel', =>
         @div class: 'panel-heading', =>
-          @span 'Ask StackOverflow'
+          @span 'Ask Stack Overflow'
         @div class: 'panel-body padded', =>
           @div =>
             @subview 'questionField', new EditorView(mini:true, placeholderText: 'Question (eg. Sort array)')
@@ -59,7 +59,6 @@ class AskStackView extends View
 
     @tagsField.on 'core:confirm', => @askStackRequest()
     @tagsField.on 'core:cancel', => @detach()
-
 
   presentPanel: ->
     this.show()
