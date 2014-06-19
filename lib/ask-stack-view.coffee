@@ -15,13 +15,13 @@ class AskStackView extends View
           @span 'Ask StackOverflow'
         @div class: 'panel-body padded', =>
           @div =>
-            @subview 'questionEditor', new EditorView(mini:true, placeholderText: 'Question (eg. Sort array)')
-            @subview 'languageEditor', new EditorView(mini:true, placeholderText: 'Language / Tags (eg. Ruby;Rails)')
+            @subview 'questionField', new EditorView(mini:true, placeholderText: 'Question (eg. Sort array)')
+            @subview 'tagsField', new EditorView(mini:true, placeholderText: 'Language / Tags (eg. Ruby;Rails)')
             @div class: 'pull-right', =>
               @button outlet: 'askButton', class: 'btn btn-primary', ' Ask! '
             @div class: 'pull-left', =>
               @label 'Sort by:'
-              @raw '<br>'
+              @br()
               @label for: 'relevance', class: 'radio-label', 'Relevance: '
               @input outlet: 'sortByRelevance', id: 'relevance', type: 'radio', name: 'sort_by', value: 'relevance', checked: 'checked'
               @label for: 'votes', class: 'radio-label last', 'Votes: '
@@ -31,7 +31,7 @@ class AskStackView extends View
 
   initialize: (serializeState) ->
     @handleEvents()
-    @askStack = null
+
     atom.workspaceView.command 'ask-stack:ask-question', => @presentPanel()
 
     atom.workspace.registerOpener (uriToOpen) ->
@@ -53,24 +53,28 @@ class AskStackView extends View
 
   handleEvents: ->
     @askButton.on 'click', => @askStackRequest()
-    @questionEditor.on 'core:confirm', => @askStackRequest()
-    @languageEditor.on 'core:confirm', => @askStackRequest()
-    @questionEditor.on 'core:cancel', => @detach()
-    @languageEditor.on 'core:cancel', => @detach()
+
+    @questionField.on 'core:confirm', => @askStackRequest()
+    @questionField.on 'core:cancel', => @detach()
+
+    @tagsField.on 'core:confirm', => @askStackRequest()
+    @tagsField.on 'core:cancel', => @detach()
+
 
   presentPanel: ->
     this.show()
     atom.workspaceView.append(this)
 
     @progressIndicator.hide()
-    @questionEditor.focus()
+    test = @questionField
+    @questionField.focus()
 
   askStackRequest: ->
     @progressIndicator.show()
 
     AskStackApiClient.resetInputs()
-    AskStackApiClient.question = @questionEditor.getText()
-    AskStackApiClient.tag = @languageEditor.getText()
+    AskStackApiClient.question = @questionField.getText()
+    AskStackApiClient.tag = @tagsField.getText()
     AskStackApiClient.sort_by = if @sortByVote.is(':checked') then 'votes' else 'relevance'
     AskStackApiClient.search (response) =>
       @progressIndicator.hide()
