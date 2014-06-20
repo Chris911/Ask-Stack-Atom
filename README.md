@@ -17,6 +17,7 @@ Toggle the Ask Stack Overlow form using `CTRL + ALT + A` or by typing `Ask Stack
 ## Installation 
 [Package homepage](https://atom.io/packages)
 
+**Install from the command line:** <br>
 `$ apm install ask-stack`
 
 ## Contributing
