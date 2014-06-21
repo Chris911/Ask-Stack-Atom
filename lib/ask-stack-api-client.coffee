@@ -2,6 +2,14 @@ https = require 'https'
 zlib = require 'zlib'
 
 module.exports =
+#
+# With the current model where we can only have 1 result page opened at once
+# this class is "static" because we want to share the API client between the
+# views easily. This way we can load more results by keeping track of the last
+# requested page. If at some point we decide we can have more than one result
+# page at the same time this class should be instanciated and passed from the
+# 'Ask Stack' view to the result view. 
+#
 class AskStackApiClient
 
   # Properties
