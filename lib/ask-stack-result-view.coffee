@@ -4,7 +4,7 @@ hljs = require 'highlight.js'
 clipboard = require 'copy-paste'
 
 window.jQuery = $
-require './ext/bootstrap.min.js'
+require './vendor/bootstrap.min.js'
 
 module.exports =
 class AskStackResultView extends ScrollView
