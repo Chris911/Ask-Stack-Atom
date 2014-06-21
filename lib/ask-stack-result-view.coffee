@@ -9,10 +9,16 @@ require './vendor/bootstrap.min.js'
 module.exports =
 class AskStackResultView extends ScrollView
   @content: ->
-    @div class: 'ask-stack-result native-key-bindings', tabindex: -1
+    @div class: 'ask-stack-result native-key-bindings', tabindex: -1, =>
+      @div id: 'results-view', outlet: 'resultsView'
+      @div id: 'load-more', class: 'load-more', click: 'loadMoreResults', outlet: 'loadMore', =>
+        @a href: '#loadmore', =>
+          @span  'Load More...'
+      @div id: 'progressIndicator', class: 'progressIndicator', outlet: 'progressIndicator', =>
+        @span class: 'loading loading-spinner-medium'
 
   initialize: ->
-      super
+    super
 
   destroy: ->
     @unsubscribe()
@@ -23,67 +29,66 @@ class AskStackResultView extends ScrollView
   getUri: ->
     'ask-stack://result-view'
 
+  getIconName: ->
+    'three-bars'
+
   handleEvents: ->
     @subscribe this, 'core:move-up', => @scrollUp()
     @subscribe this, 'core:move-down', => @scrollDown()
 
   renderAnswers: (answersJson, loadMore = false) ->
+    @answersJson = answersJson
+
     # Clean up HTML if we are loading a new set of answers
-    @html('') unless loadMore
+    @resultsView.html('') unless loadMore
 
     if answersJson['items'].length == 0
-      this.append('<br><center>Your search returned no matches.</center>')
+      this.html('<br><center>Your search returned no matches.</center>')
     else
       # Render the question headers first
       for question in answersJson['items']
         @renderQuestionHeader(question)
 
-      this.append("<div id='load-more' class='load-more'><a href='#loadmore'><span>Load More...</span></a></div>")
-      this.append("<div id='progressIndicator' class='progressIndicator'><span class='loading loading-spinner-medium'></span></div>")
-
       # Then render the questions and answers
       for question in answersJson['items']
         @renderQuestionBody(question)
 
-      $("a[href='#loadmore']").click (event) =>
-          if answersJson['has_more']
-            $('#progressIndicator').show()
-            $('#load-more').remove()
-            AskStackApiClient.page = AskStackApiClient.page + 1
-            AskStackApiClient.search (response) =>
-              $('#progressIndicator').remove()
-              @renderAnswers(response, true)
-          else
-            $('#load-more').children().children('span').text('No more results to load.')
-
   renderQuestionHeader: (question) ->
-    html = "
-    <div class='ui-result' id='#{question['question_id']}'>
-      <h2 class='title'>
-        <a class='underline title-string' href='#{question['link']}'>
-          #{question['title']}
-        </a>
-      <div class='score'><p>#{question['score']}</p></div>
-      </h2>
-      <div class='created'>
-        #{new Date(question['creation_date'] * 1000).toLocaleString()}
-      </div>
-      <div class='tags'>"
-    for tag in question['tags']
-      html += "<span class='label label-info'>#{tag}</span>\n"
-    html += "
-      </div>
-      <div class='collapse-button'>
-        <button id='toggle-#{question['question_id']}' type='button' class='btn btn-info btn-xs' data-toggle='collapse' data-target='#question-body-#{question['question_id']}'>
-        Show More
-        </button>
-      </div>
-    </div>"
-    this.append(html)
+    # Decode title html entities
+    title = $('<div/>').html(question['title']).text();
+    questionHeader = $$$ ->
+      @div id: question['question_id'], class: 'ui-result', =>
+        @h2 class: 'title', =>
+          @a href: question['link'], class: 'underline title-string', title
+          @div class: 'score', =>
+            @p question['score']
+        @div class: 'created', =>
+          @text new Date(question['creation_date'] * 1000).toLocaleString()
+        @div class: 'tags', =>
+          for tag in question['tags']
+            @span class: 'label label-info', tag
+            @text '\n'
+        @div class: 'collapse-button'
+
+    # Space-pen doesn't seem to support the data-toggle and data-target attributes
+    toggleBtn = $('<button></button>', {
+      id: "toggle-#{question['question_id']}",
+      type: 'button',
+      class: 'btn btn-info btn-xs',
+      text: 'Show More'
+    })
+    toggleBtn.attr('data-toggle', 'collapse')
+    toggleBtn.attr('data-target', "#question-body-#{question['question_id']}")
+
+    html = $(questionHeader).find('.collapse-button').append(toggleBtn).parent()
+    @resultsView.append(html)
 
   renderQuestionBody: (question) ->
     curAnswer = 0
     quesId = question['question_id']
+
+    # Leaving as HTML for now as space-pen doesn't support data-toggle attribute
+    # Also struggling with <center> and the navigation link
     div = $('<div></div>', {
       id: "question-body-#{question['question_id']}"
       class: "collapse"
@@ -95,26 +100,28 @@ class AskStackResultView extends ScrollView
     </ul>
     <div class='tab-content'>
       <div class='tab-pane active' id='question-#{quesId}'>#{question['body']}</div>
-      <div class='tab-pane' id='answers-#{quesId}'>
+      <div class='tab-pane answer-navigation' id='answers-#{quesId}'>
         <center><a href='#prev#{quesId}'><< Prev</a>   <span id='curAnswer-#{quesId}'>#{curAnswer+1}</span>/#{question['answers'].length}  <a href='#next#{quesId}'>Next >></a> </center>
       </div>
     </div>")
+
     $("##{quesId}").append(div)
+
     @highlightCode(quesId)
     @addCodeButtons(quesId)
-
     @renderAnswerBody(question['answers'][curAnswer], quesId)
-
     @setupClickEvents(question, curAnswer)
 
   renderAnswerBody: (answer, question_id) ->
-    div = $('<div></div>')
-    div.append("<a href='#{answer['link']}'><span class='answer-link'>➚</span></a>")
-    div.append("<span class='label label-success'>Accepted</span>") if answer['is_accepted']
-    div.append("<div class='score answer'><p>#{answer['score']}</p></div>")
-    div.append(answer['body'])
+    answerHtml = $$$ ->
+      @div =>
+        @a href: answer['link'], =>
+          @span class: 'answer-link', '➚'
+        @span class: 'label label-success', 'Accepted' if answer['is_accepted']
+        @div class: 'score answer', =>
+          @p answer['score']
 
-    $("#answers-#{question_id}").append(div)
+    $("#answers-#{question_id}").append($(answerHtml).append(answer['body']))
 
     @highlightCode("answers-#{question_id}")
     @addCodeButtons("answers-#{question_id}")
@@ -156,6 +163,18 @@ class AskStackResultView extends ScrollView
           editor.insertText(code)
 
     return btn
+
+  loadMoreResults: ->
+    if @answersJson['has_more']
+      @progressIndicator.show()
+      @loadMore.hide()
+      AskStackApiClient.page = AskStackApiClient.page + 1
+      AskStackApiClient.search (response) =>
+        @loadMore.show()
+        @progressIndicator.hide()
+        @renderAnswers(response, true)
+    else
+      $('#load-more').children().children('span').text('No more results to load.')
 
   setupClickEvents: (question, curAnswer) ->
     quesId = question['question_id']
