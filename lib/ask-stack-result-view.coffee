@@ -3,6 +3,7 @@ AskStackApiClient = require './ask-stack-api-client'
 hljs = require 'highlight.js'
 clipboard = require 'copy-paste'
 
+window.jQuery = $
 require './ext/bootstrap.min.js'
 
 module.exports =
