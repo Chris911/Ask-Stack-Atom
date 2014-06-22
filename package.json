@@ -4,13 +4,13 @@
   "version": "0.0.1",
   "description": "Quickly get answers and code samples from Stack Overflow in Atom",
   "activationEvents": ["ask-stack:ask-question"],
-  "repository": "https://github.com/Chris911/ask-stack",
+  "repository": "https://github.com/Chris911/Ask-Stack-Atom",
   "license": "MIT",
   "engines": {
     "atom": ">0.50.0"
   },
   "dependencies": {
-    "highlight.js": "*",
-    "copy-paste": "*"
+    "highlight.js": "8.x",
+    "copy-paste": "0.2.x"
   }
 }
