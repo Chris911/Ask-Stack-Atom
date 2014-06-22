@@ -3,4 +3,4 @@ AskStackView = require '../lib/ask-stack-view'
 
 describe "AskStackView", ->
   it "has one valid test", ->
-    expect("life").toBe "easy"
+    true
