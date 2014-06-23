@@ -1,0 +1,264 @@
+{
+  "items": [
+    {
+      "tags": [
+        "javascript",
+        "optimization",
+        "dojo",
+        "amd",
+        "dojo.build"
+      ],
+      "owner": {
+        "reputation": 4811,
+        "user_id": 76363,
+        "user_type": "registered",
+        "accept_rate": 65,
+        "profile_image": "https://www.gravatar.com/avatar/aab7f54273423e7f6445e773909d391c?s=128&d=identicon&r=PG",
+        "display_name": "voidstate",
+        "link": "http://stackoverflow.com/users/76363/voidstate"
+      },
+      "is_answered": false,
+      "view_count": 2,
+      "answer_count": 0,
+      "score": 0,
+      "last_activity_date": 1403494953,
+      "creation_date": 1403494953,
+      "question_id": 24358115,
+      "link": "http://stackoverflow.com/questions/24358115/dojo-build-failing-for-one-module-optimizer-failed-internalerror-missing-name",
+      "title": "Dojo Build Failing for One Module: OPTIMIZER FAILED: InternalError: missing name after . operator",
+      "body": "<p>I am successfully building my project using the Dojo Build tool. However, I have one module <code>squad_builder/Pilot</code> that causes the build to fail whenever I include it, giving the following error:</p>\n\n<pre><code>error(356) The optimizer threw an exception; the module probably contains syntax errors. module identifier: /Users/ferg/Dropbox/webdev/x-wing_squadron_builder/www/js/dist/squad_builder/run_deps.js; exception: (compile time:1.247s). OPTIMIZER FAILED: InternalError: missing name after . operator\n</code></pre>\n\n<p>The module works fine in development and even running it through JS Lint, there's no obvious errors in it and particularly, nothing to do with a misplaced \".\" that I can see anywhere.</p>\n\n<p>Here's the code of the module:</p>\n\n<pre><code>define( [ 'dojo/_base/declare', \n\n          // parents\n          'dijit/TitlePane',\n\n          // used modules\n          'dojo/_base/lang',\n          'dojo/_base/array',\n          'dojo/dom-construct',\n          'dojo/dom-style',\n          'dojo/_base/fx',\n          'dojo/_base/event',\n          'squad_builder/actionIconParser',\n          'dojo/promise/all',\n          'dojo/Deferred',\n\n          // dijits\n          'dijit/form/Button',\n\n          // stores\n          // @todo only load rebels or empire store\n          'squad_builder/storeBroker!rebelsStore',\n          'squad_builder/storeBroker!empireStore',\n          'squad_builder/storeBroker!actionsStore',\n          'squad_builder/storeBroker!upgradeTypesStore',\n          'squad_builder/storeBroker!setsStore',\n          'squad_builder/storeBroker!shipTypesStore',\n\n          // template\n          'dojo/text!./Pilot/templates/Pilot.html' // extended TitlePane template\n\n    ],\n    function( declare, \n        TitlePane, \n        lang, array, domConstruct, domStyle, fx, event, actionIconParser, all, Deferred, \n        Button, \n        rebelsStore, empireStore, actionsStore, upgradeTypesStore, setsStore, shipTypesStore,\n        template )\n    {\n        return declare( [ TitlePane ], \n        {\n            // provided to constructor\n            faction: null,\n\n            pilotId: null,\n            squadList: null,\n            squadPaneId: null, // used for duplicating\n\n            basePoints: null, // initial points\n            points: null, // total points of pilot + upgrades\n\n            _loaded: false, // flag to prevent multiple startup() calles\n\n            allUpgradesLoaded: false,\n\n            templateString: template,\n\n            // A class to be applied to the root node in our template\n            baseClass: 'pilotWidget dijitTitlePane',\n\n            // used in auto-generated IDs\n            declaredClass: 'squad_builder.PilotWidget',\n\n            constructor: function()\n            {\n                // declared in constructor so all instances have their own copy\n                this.pilotData = {};\n                this.originalPilotData = {}; // used when removing upgrades so we cannot remove boost from A-Wings for example\n                this.initiallySelectedUpgrades = [];\n                this.upgradeButtons = [];\n\n                // reference to squad-level caches\n                this.uniqueUpgradeCache = {}; \n                this.collection = null;\n            },\n\n            // fetch the pilot data before loading template\n            postMixInProperties: function()\n            {\n                this.inherited( arguments );\n\n                // use pilot id to load the rest of the pilot data\n                var store = this.faction == 'rebels' ? rebelsStore : empireStore,\n                    data = store.get( this.pilotId ); // pilot data\n\n                // save pilot data\n                lang.mixin( this.pilotData, lang.clone( data ) ); // bugfix: needs clone or all copies of this ship will be modified by pilot modules\n                this.originalPilotData = lang.clone( this.pilotData );\n\n                // set initial points\n                this.basePoints = parseInt( this.pilotData.cost ); // base points = pilot cost\n                this.points = parseInt( this.pilotData.cost ); // may increase with upgrades\n            },          \n\n            postCreate: function()\n            {\n                // Run any parent postCreate processes - can be done at any point\n                this.inherited( arguments );\n\n                // wait until we have child widgets containing upgrades before figuring out points\n                this._calculatePoints();\n\n                // info\n                this.infoDiv.innerHTML = shipTypesStore.get( this.pilotData.ship_type_id )['name'];\n\n                if( this.pilotData.unique  )\n                {\n                    this.infoDiv.innerHTML += ', Unique';\n                }\n\n                if( !this.pilotData.released )\n                {\n                    this.infoDiv.innerHTML +=  ', Unreleased';\n                }\n\n                // switch between energy and primary stats\n                if( !this.pilotData.energy )\n                {\n                    domStyle.set( this.energyNode, { display: 'none' } );\n                }\n\n                if( !this.pilotData.primary )\n                {\n                    domStyle.set( this.primaryNode, { display: 'none' } );\n                }\n\n                // ability\n                if( this.pilotData.ability )\n                {\n                    this.abilityDiv.innerHTML = actionIconParser( this.pilotData.ability );\n                }\n\n                // add icons for actions\n                this._initActions();\n\n                // sets\n                array.forEach( this.pilotData.sets, function( set )\n                {\n                    var setData = setsStore.get( set );\n                    domConstruct.create( 'div',\n                    {\n                        innerHTML: setData.acronym,\n                        title: setData.name\n                    },\n                    this.setsContainer );\n                }, this );\n\n                // clear message if any upgrades\n                if( this.pilotData.upgrades.length )\n                {\n                    this.upgradesDiv.innerHTML = '';\n                }\n            },\n\n            /*\n             * Upgrades added here or watch() doesn't fire!\n             */\n            startup: function()\n            {\n                if( this._loaded == false ) // only call this once when first adding pilot, not again when sorting\n                {\n                    // track all upgrades\n                    var allUpgradesLoadedPromises = [];\n\n                    // upgrade buttons\n                    array.forEach( this.pilotData.upgrades, function( upgradeTypeId, index )\n                    {\n                        var deferred = this._addUpgradeButton( upgradeTypeId, this.initiallySelectedUpgrades[ index ], index, false );\n                        allUpgradesLoadedPromises.push( deferred.promise );\n                    },\n                    this );\n\n                    // do we have extra upgrades (eg. added by another upgrade)?\n                    var extraUpgrades = array.filter( this.initiallySelectedUpgrades, function( selectedUpgrade )\n                    {\n                        return selectedUpgrade instanceof Array;\n                    } );\n\n                    if( extraUpgrades.length &gt; 0 )\n                    {\n                        array.forEach( extraUpgrades, function( extraUpgrade, index )\n                        {\n                            var deferred = this._addUpgradeButton( extraUpgrade[1], extraUpgrade[0], this.pilotData.upgrades.length + index, true );\n                            allUpgradesLoadedPromises.push( deferred.promise );\n                        },\n                        this );\n                    }\n\n                    // track when all promises fulfilled\n                    // other objects (eg. modules) can use watch('allUpgradesLoaded') to hook into this\n                    all( allUpgradesLoadedPromises ).then( lang.hitch( this, function()\n                    {\n                        this.set( 'allUpgradesLoaded', true );\n                    } ) ).otherwise( function()\n                    {\n                        console.warn( 'Failed to track whether upgrades loaded', arguments );\n                    } );\n\n                    // highlight\n                    domStyle.set( this.containerNode, { backgroundColor: '#FFF8B5' } );\n                    fx.animateProperty(\n                    {\n                        node: this.containerNode,\n                        properties: {\n                            backgroundColor: '#FFFFFF'\n                        },\n                        duration: 500,\n                        delay: 1000\n                     } ).play();\n\n                    this._loaded = true;\n                }\n            },\n\n            _initActions: function()\n            {\n                // show action icons    \n                // in function so we can fade out old icons first...\n                var show = lang.hitch( this, function()\n                {\n                    domStyle.set( this.actionsDiv, 'opacity', 0 );\n\n                    array.forEach( this.pilotData.actions, function( action )\n                    {\n                        var actionData = actionsStore.get( action );\n\n                        domConstruct.create( 'div',\n                        {\n                            className: 'icon_action ' + actionData.class_name,\n                            title: actionData.name\n                        },\n                        this.actionsDiv );\n                    },\n                    this );\n\n                    fx.fadeIn(\n                    {\n                        node: this.actionsDiv\n                    } ).play();\n                } );\n\n                // already got icons?\n                if( this.actionsDiv !== undefined &amp;&amp; this.actionsDiv.innerHTML != '' )\n                {\n                    fx.fadeOut(\n                    {\n                        node: this.actionsDiv,\n                        onEnd: lang.hitch( this, function()\n                        {\n                            this.actionsDiv.innerHTML = '';\n                            show();\n                        } )\n                    } ).play();\n                }   \n                else\n                {\n                    show();\n                }   \n            },\n\n            _addUpgradeButton: function( upgradeTypeId, selectedId, position, isExtra ) \n            {\n                var upgradeTypeData = upgradeTypesStore.get( upgradeTypeId ), // type of upgrade tells us what upgrade store to use\n                    upgradeButtonDeferred = new Deferred();\n\n                // get specific upgrade data for this button\n                require( [ 'squad_builder/PilotUpgradeButton', 'squad_builder/storeBroker!' + upgradeTypeData.store ], \n                    lang.hitch( this, function( PilotUpgradeButton, upgradeStore )\n                {\n                    // create button\n                    var upgradeButton = new PilotUpgradeButton(\n                    {\n                        position: position,\n                        isExtra: Boolean( isExtra ),\n                        pilot: this,\n                        upgradeTypeId: upgradeTypeId,\n                        name: upgradeTypeData.name,\n                        upgradeClass: upgradeTypeData.class,\n                        upgradeStore: upgradeStore,\n                        selectedId: selectedId, \n\n                        // reference to squadlist-level cache\n                        // used to check if unique upgrades used\n                        uniqueUpgradeCache: this.uniqueUpgradeCache,\n\n                        // reference to squadpane-level collection store\n                        // used to record component use\n                        collection: this.collection\n                    } );\n\n                    // watch points changes\n                    upgradeButton.watch( 'points', lang.hitch( this, function()\n                    {\n                        this._calculatePoints();\n                    } ) );\n\n                    // store reference\n                    this.upgradeButtons.push( upgradeButton );\n\n                    // place\n                    upgradeButton.placeAt( this.upgradesDiv );\n                    upgradeButton.startup(); // add upgrades after watch() added\n\n                    upgradeButtonDeferred.resolve( upgradeButton );\n                } ) );\n\n                return upgradeButtonDeferred; // allows pilot._addUpgradeButton( ... ).then( ... )\n            },\n\n            _calculatePoints: function()\n            {\n                var points = this.get('basePoints');\n\n                // get points from upgrade buttons\n                array.forEach( this.upgradeButtons, function( upgradeButton )\n                {\n                    points += upgradeButton.get( 'points' );\n                } );\n\n                this.set( 'points', points );\n            },\n\n            _calculateTitle: function()\n            {\n                var title = this.pilotData.name;\n                array.forEach( this.upgradeButtons, function( upgradeButton )\n                {\n                    var upgradeName = upgradeButton.get( 'selectedName' );\n                    if( upgradeName )\n                    {\n                        title += ' + ' + upgradeName;\n                    }   \n                } );\n                title += ' (' + this.get( 'points' ) + ')';\n\n                this.set( 'title', title );\n            },\n\n            // for dojo/Stateful watch/get/set\n            _setPointsAttr: function( value ) \n            {\n                this._set( 'points', value );\n                this._calculateTitle();\n            },\n\n            close: function()\n            {\n                this.set( 'open', false );\n            },\n\n            _onDelete: function( e )\n            {\n                event.stop( e );\n                this.onDelete();\n                this.destroyRecursive();\n            },\n\n            /**\n             * Extension point\n             */\n            onDelete: function()\n            {\n            },\n\n            _onDuplicate: function( e )\n            {\n                event.stop( e );\n                this.onDuplicate();\n                this.squadList.addPilot( this.get( 'squadPaneId' ), this.get('faction'), this.get('pilotId'), this.get('upgrades')  );\n            },\n\n            /**\n             * Extension point\n             */\n            onDuplicate: function()\n            {\n            },\n\n            _onMoveUp: function( e )\n            {\n                event.stop( e );\n                this.onMoveUp();\n                this.squadList.movePilot( this.get( 'id' ), -1  );\n            },\n\n            /**\n             * Extension point\n             */\n            onMoveUp: function()\n            {\n            },\n\n            _onMoveDown: function( e )\n            {\n                event.stop( e );\n                this.onMoveDown();\n                this.squadList.movePilot( this.get( 'id' ), 1  );\n            },\n\n            /**\n             * Extension point\n             */\n            onMoveDown: function()\n            {\n            },\n\n            /**\n             * Data to save/recreate this pilot\n             */\n            getData: function()\n            {\n                return { \n                    id: this.get('pilotId'), \n                    points: this.get('points'), \n                    basePoints: this.get('basePoints'), \n                    upgrades: this.get('upgrades') \n                };\n            },\n\n            /**\n             * allows: this.get('upgrades')\n             */\n            _getUpgradesAttr: function()\n            {\n                // get upgrades from buttons\n                var upgrades = [];\n\n                // upgradeButton widgets may not be instantiated when this.get('upgrades') first called \n                // if so default to...\n                if( this.upgradeButtons.length == 0 ) \n                {\n                    // ... initially selected upgrades\n                    if( this.initiallySelectedUpgrades.length !== undefined &amp;&amp; this.initiallySelectedUpgrades.length &gt; 0 ) \n                    {\n                        upgrades = this.initiallySelectedUpgrades;\n                    }\n                    // ... or create array of nulls\n                    else \n                    {   \n                        var numUpgrades = this.pilotData.upgrades.length,\n                            i = 0;\n                        while( i++ &lt; numUpgrades )\n                        {\n                            upgrades.push( null );\n                        }\n                    }\n                }\n                else\n                {\n                    array.forEach( this.upgradeButtons, function( upgradeButton )\n                    {\n                        // use position from instantiation to ensure we get them in the right order\n                        upgrades[ upgradeButton.get( 'position' ) ] = upgradeButton.get( 'selectedId' ); // id or null or tuple pair\n                    } );\n                }\n\n                return upgrades;\n            },\n\n            _getNameAttr: function()\n            {\n                return this.pilotData.name;\n            },\n\n            _getPilotAttr: function()\n            {\n                return this.pilotData.pilot;\n            },\n\n            _setPilotAttr: function( value )\n            {\n                this.pilotData.pilot = value;\n\n                // animate change\n                fx.fadeOut(\n                {\n                    node: this.pilotNode,\n                    onEnd: lang.hitch( this, function()\n                    {\n                        this.pilotNode.innerHTML = value;\n                        fx.fadeIn(\n                        {\n                            node: this.pilotNode\n                        } ).play();\n                    } )\n                } ).play();\n            },\n\n            _getShieldsAttr: function()\n            {\n                return this.pilotData.shields;\n            },\n\n            _setShieldsAttr: function( value )\n            {\n                this.pilotData.shields = value;\n\n                // animate change\n                var shieldsNode = this.shieldsNode; // was losing scope so use local var\n                fx.fadeOut(\n                {\n                    node: shieldsNode,\n                    onEnd: function()\n                    {\n                        shieldsNode.innerHTML = value;\n                        fx.fadeIn(\n                        {\n                            node: shieldsNode\n                        } ).play();\n                    }\n                } ).play();\n            },\n\n            _getAgilityAttr: function()\n            {\n                return this.pilotData.agility;\n            },\n\n            _setAgilityAttr: function( value )\n            {\n                this.pilotData.agility = value;\n\n                // animate change\n                fx.fadeOut(\n                {\n                    node: this.agilityNode,\n                    onEnd: lang.hitch( this, function()\n                    {\n                        this.agilityNode.innerHTML = value;\n                        fx.fadeIn(\n                        {\n                            node: this.agilityNode\n                        } ).play();\n                    } )\n                } ).play();\n            },\n\n            _getHullAttr: function()\n            {\n                return this.pilotData.hull;\n            },\n\n            _setHullAttr: function( value )\n            {\n                this.pilotData.hull = value;\n\n                // animate change\n                fx.fadeOut(\n                {\n                    node: this.hullNode,\n                    onEnd: lang.hitch( this, function()\n                    {\n                        this.hullNode.innerHTML = value;\n                        fx.fadeIn(\n                        {\n                            node: this.hullNode\n                        } ).play();\n                    } )\n                } ).play();\n            },\n\n            _getEnergyAttr: function()\n            {\n                return this.pilotData.energy;\n            },\n\n            _setEnergyAttr: function( value )\n            {\n                this.pilotData.energy = value;\n\n                // animate change\n                fx.fadeOut(\n                    {\n                        node: this.energyNode,\n                        onEnd: lang.hitch( this, function()\n                        {\n                            this.energyNode.innerHTML = value;\n                            fx.fadeIn(\n                            {\n                                node: this.energyNode\n                            } ).play();\n                        } )\n                    } ).play();\n            }\n\n        } );\n    } \n);\n</code></pre>\n\n<p>I've been over and over the code but I just cannot find anything that seems to match up to the error message I'm getting. Any ideas?</p>\n"
+    },
+    {
+      "tags": [
+        "ruby",
+        "arrays",
+        "sorting"
+      ],
+      "answers": [
+        {
+          "owner": {
+            "reputation": 32,
+            "user_id": 3314696,
+            "user_type": "registered",
+            "profile_image": "http://i.stack.imgur.com/ZG7jr.jpg?s=128&g=1",
+            "display_name": "Anurag Soni",
+            "link": "http://stackoverflow.com/users/3314696/anurag-soni"
+          },
+          "is_accepted": true,
+          "score": 1,
+          "last_activity_date": 1403488991,
+          "creation_date": 1403488991,
+          "answer_id": 24357536,
+          "question_id": 24357489,
+          "link": "http://stackoverflow.com/questions/24357489/sort-an-array-of-string-in-descending-order/24357536#24357536",
+          "body": "<p>I think that the tutorial was just trying to help you understand the &lt;=> (spaceship operator) and how sorting is affected by the order of the variables. books.sort!.reverse is something that you would use more commonly. </p>\n"
+        },
+        {
+          "owner": {
+            "reputation": 13629,
+            "user_id": 1721198,
+            "user_type": "registered",
+            "accept_rate": 100,
+            "profile_image": "http://i.stack.imgur.com/qUmGl.jpg?s=128&g=1",
+            "display_name": "Billy Chan",
+            "link": "http://stackoverflow.com/users/1721198/billy-chan"
+          },
+          "is_accepted": false,
+          "score": 2,
+          "last_activity_date": 1403491547,
+          "creation_date": 1403491547,
+          "answer_id": 24357787,
+          "question_id": 24357489,
+          "link": "http://stackoverflow.com/questions/24357489/sort-an-array-of-string-in-descending-order/24357787#24357787",
+          "body": "<p>There is a slight performance difference between the two</p>\n\n<p>This one is just one step of sort</p>\n\n<pre><code>books.sort! { |firstBook, secondBook| secondBook &lt;=&gt; firstBook }\n</code></pre>\n\n<p>This one actually contains two steps: sort and reverse</p>\n\n<pre><code>books.sort!.reverse\n</code></pre>\n\n<p>So, when the data is large the first one is preferred. However, in normal cases the second one would be simpler to write and the slight difference on performance doesn't matter that much.</p>\n"
+        }
+      ],
+      "owner": {
+        "reputation": 1479,
+        "user_id": 142237,
+        "user_type": "registered",
+        "accept_rate": 98,
+        "profile_image": "http://i.stack.imgur.com/MIjhl.jpg?s=128&g=1",
+        "display_name": "codedude",
+        "link": "http://stackoverflow.com/users/142237/codedude"
+      },
+      "is_answered": true,
+      "view_count": 24,
+      "accepted_answer_id": 24357536,
+      "answer_count": 2,
+      "score": 0,
+      "last_activity_date": 1403491547,
+      "creation_date": 1403488507,
+      "question_id": 24357489,
+      "link": "http://stackoverflow.com/questions/24357489/sort-an-array-of-string-in-descending-order",
+      "title": "Sort an array of string in descending order",
+      "body": "<p>Say I want to sort an array of strings in Ruby in descending order. So for example:</p>\n\n<pre><code>books = [\"Charlie and the Chocolate Factory\", \"War and Peace\", \"Utopia\", \"A Brief History of Time\", \"A Wrinkle in Time\"]\n</code></pre>\n\n<p>I'm currently going through Code Academy's Ruby course and they say to use the following code to achieve this:</p>\n\n<pre><code>books.sort! { |firstBook, secondBook| secondBook &lt;=&gt; firstBook }\n</code></pre>\n\n<p>However, couldn't this also be done by simply writing the following?</p>\n\n<pre><code>books.sort!.reverse\n</code></pre>\n\n<p>They both produce the same result on the Code Academy lesson but I was wondering if there what the difference was between the two. </p>\n"
+    },
+    {
+      "tags": [
+        "java"
+      ],
+      "answers": [
+        {
+          "owner": {
+            "reputation": 15486,
+            "user_id": 391161,
+            "user_type": "registered",
+            "accept_rate": 65,
+            "profile_image": "https://www.gravatar.com/avatar/fb76d8bcc69144a3ee4c893ece7fc588?s=128&d=identicon&r=PG&f=1",
+            "display_name": "merlin2011",
+            "link": "http://stackoverflow.com/users/391161/merlin2011"
+          },
+          "is_accepted": false,
+          "score": 1,
+          "last_activity_date": 1403489091,
+          "last_edit_date": 1403489091,
+          "creation_date": 1403488787,
+          "answer_id": 24357520,
+          "question_id": 24357428,
+          "link": "http://stackoverflow.com/questions/24357428/quicksorting-a-file-of-integers/24357520#24357520",
+          "body": "<p>Based on the following statement, I infer that the OP is asking how to perform <code>IO</code> on the same file for input and output.</p>\n\n<blockquote>\n  <p>I am having trouble reading the file and printing it out in sorted\n  order in the same file.</p>\n</blockquote>\n\n<ol>\n<li>You do not need to use <code>hasNext()</code> if the user is telling you exactly how many integers there are.</li>\n<li>On a similar vein, there is no need to create a variable size <code>List</code> if you already know many integers there are.</li>\n<li>You should not open a <code>PrintWriter</code> pointing at a file until you are ready to clobber it.</li>\n</ol>\n\n<p>Here is a corrected version of <code>main</code> from your original question.</p>\n\n<pre><code>public static void main(String[] args) throws FileNotFoundException\n{\n    int n = Integer.parseInt(args[0]);\n    String filePath = args[1];\n    //rest is for the quicksorting\n    File inFile = new File(filePath);\n    Scanner in = new Scanner(inFile);\n    int[] list = new int[n];\n    for(int i = 0; i &lt; n; i++)\n        list[i] = in.nextInt();\n    in.close();\n    long startTime = System.currentTimeMillis();\n    qSort(list, 0, list.length - 1);\n    long endTime = System.currentTimeMillis();\n    long duration = endTime - startTime;\n    System.out.println(duration);\n\n\n    // Create a PrintWriter and clobber the file AFTER you have read it.\n    PrintWriter out = new PrintWriter(filePath);\n    for (int i = 0; i &lt; n; i++) {\n        System.out.println(list[i]);\n        out.println(list[i]);\n    }\n    out.close();\n\n}\n</code></pre>\n"
+        }
+      ],
+      "owner": {
+        "reputation": 1,
+        "user_id": 3754524,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/cad93774b9cdca1a75454848e7aa9fbe?s=128&d=identicon&r=PG&f=1",
+        "display_name": "user3754524",
+        "link": "http://stackoverflow.com/users/3754524/user3754524"
+      },
+      "is_answered": true,
+      "view_count": 30,
+      "answer_count": 1,
+      "score": -2,
+      "last_activity_date": 1403491370,
+      "creation_date": 1403487730,
+      "last_edit_date": 1403491370,
+      "question_id": 24357428,
+      "link": "http://stackoverflow.com/questions/24357428/quicksorting-a-file-of-integers",
+      "title": "Quicksorting a file of integers",
+      "body": "<p>I have to quicksort a user input file of integers(each line in the file contains one integer). My quicksort methods work, I tested them already. I am having trouble reading the file and printing it out in sorted order in the same file. I also have to time how long the process takes. Here is what I have so far: The first argument passed into the method is the number of integers the file will be and the second argument passed is the name of the file. The generateRandom() method is from Question0 class and it creates a file with random integers, each separated by a line. It takes two arguments an int and a filename. It creates a file with the name filename and it consists of int integers. Hopefully all this makes sense.</p>\n\n<p>Edit: Here is a working code but I am having trouble running it when there are 1million numbers in the file. It gives outofmemory error. When there are 1billion, it says numberformatexception. I have to run a test file with 1billion numbers in it.</p>\n\n<pre><code>import java.io.File;\nimport java.io.FileNotFoundException;\nimport java.io.FileReader;\nimport java.io.PrintWriter;\nimport java.util.ArrayList;\nimport java.util.Scanner;\n\npublic class QuickSort1000 {\n    public static void main(String[] args) throws Exception\n    {\n        int n = Integer.parseInt(args[0]);\n        String filePath = args[1];\n        Question0 genRan = new Question0();\n        genRan.generateRandom(n, filePath);\n        //rest if for quicksorting\n        File inFile = new File(filePath);\n        Scanner in = new Scanner(inFile);\n        int[] list = new int[n];\n        for(int i = 0; i &lt; n; i++)\n        {\n            list[i] = in.nextInt();\n        }\n        in.close();\n\n        long startTime = System.nanoTime();\n        qSort(list, 0, list.length - 1);\n        long endTime = System.nanoTime();\n        long duration = endTime - startTime;\n        System.out.println(\"Total time: \" + duration + \" nanoseconds\");\n        for(int i = 1; i &lt; list.length; i++)\n        {\n            if(list[i - 1] &gt; list[i])\n            {\n                throw new Exception(\"Not in sorted order\");\n            }\n            //System.out.print(list[i]);\n        }\n\n    }\n\n        // TODO Auto-generated constructor stub\n    /**\n     * The main quicksort method that uses the partition method below\n     * @param a the input array\n     * @param p the first valid index of array\n     * @param r the last valid index of array\n     */\n        public static void qSort(int[] a, int p, int r) {\n            // TODO Auto-generated method stub\n            if (p &lt; r)\n            {\n                int q = Partition(a, p, r);\n                qSort(a, p, q - 1);\n                qSort(a, q + 1, r);\n            }\n\n        }\n        /**\n         * Partitions the array with respect to the last element in the array\n         * @param a the input array\n         * @param p the first element in the array\n         * @param r the last element in the array\n         * @return the element with which we will partition with respect to. The \n         * return element will be in its correct spot.\n         */\n        private static int Partition(int[] a,int p, int r)\n        {\n            int x = a[r];\n            int i = p - 1;\n            int temp = 0;\n            for(int j = p; j &lt;= r - 1; j++)\n            {\n                if(a[j] &lt;= x)\n                {\n                    i++;\n                    temp = a[i];\n                    a[i] = a[j];\n                    a[j] = temp;\n                }\n            }\n             temp = a[i+1];\n             a[i+1] = a[r];\n             a[r] = temp;\n             return i + 1;\n        }\n\n\n    }\n</code></pre>\n"
+    },
+    {
+      "tags": [
+        "c++",
+        "c",
+        "arrays",
+        "algorithm",
+        "sorting"
+      ],
+      "answers": [
+        {
+          "owner": {
+            "reputation": 6,
+            "user_id": 2679843,
+            "user_type": "registered",
+            "profile_image": "https://www.gravatar.com/avatar/30066c78d3fff0729fa87b79a8e5c24a?s=128&d=identicon&r=PG&f=1",
+            "display_name": "Reeling",
+            "link": "http://stackoverflow.com/users/2679843/reeling"
+          },
+          "is_accepted": false,
+          "score": 0,
+          "last_activity_date": 1403491244,
+          "creation_date": 1403491244,
+          "answer_id": 24357758,
+          "question_id": 24357737,
+          "link": "http://stackoverflow.com/questions/24357737/when-counting-comparisons-of-sorting-algorithms-why-are-there-less-comparisons-f/24357758#24357758",
+          "body": "<p>If the array is the same size and in the <strong>exact same order</strong> then yes it would be the same.</p>\n\n<p>Of course there could be a flaw in how you are creating the arrays or how you are counting your comparisons.</p>\n"
+        }
+      ],
+      "owner": {
+        "reputation": 5,
+        "user_id": 2435044,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/aa7b9cf35019b246261a482c09cb52f7?s=128&d=identicon&r=PG",
+        "display_name": "user2435044",
+        "link": "http://stackoverflow.com/users/2435044/user2435044"
+      },
+      "is_answered": false,
+      "view_count": 47,
+      "closed_date": 1403491231,
+      "answer_count": 1,
+      "score": -3,
+      "last_activity_date": 1403491244,
+      "creation_date": 1403491018,
+      "question_id": 24357737,
+      "link": "http://stackoverflow.com/questions/24357737/when-counting-comparisons-of-sorting-algorithms-why-are-there-less-comparisons-f",
+      "closed_reason": "off-topic",
+      "title": "When counting comparisons of sorting algorithms why are there less comparisons for float than int?",
+      "body": "<p>I wanted to see how many comparisons are made during Insertion Sort for a 100 length array and the results are confusing. </p>\n\n<p>An integer array of size 100 gives me 4950 comparisons, while a float array of size 100 yields 2446 comparisons and a string array of size 100 results in 2735 comparisons. </p>\n\n<p>Why does this happen? Shouldn't the same number of comparisons be made for the same size no matter what type of array?</p>\n"
+    },
+    {
+      "tags": [
+        "ios",
+        "objective-c",
+        "sorting",
+        "object"
+      ],
+      "answers": [
+        {
+          "owner": {
+            "reputation": 415,
+            "user_id": 1008234,
+            "user_type": "registered",
+            "accept_rate": 25,
+            "profile_image": "https://www.gravatar.com/avatar/3c7271208b5c2be17113030412f5476f?s=128&d=identicon&r=PG",
+            "display_name": "Ryan",
+            "link": "http://stackoverflow.com/users/1008234/ryan"
+          },
+          "is_accepted": true,
+          "score": 0,
+          "last_activity_date": 1403479628,
+          "creation_date": 1403479628,
+          "answer_id": 24356711,
+          "question_id": 24356487,
+          "link": "http://stackoverflow.com/questions/24356487/how-to-sort-array-of-objects-with-ints-in-them-in-objective-c/24356711#24356711",
+          "body": "<p>This is actually very doable with <code>NSArray</code>. We'll be using <code>NSSortDescriptors</code> to achieve this, which basically uses <a href=\"https://developer.apple.com/library/ios/documentation/cocoa/conceptual/KeyValueCoding/Articles/KeyValueCoding.html\" rel=\"nofollow\">key-value coding</a> on an array of properties to sort.</p>\n\n<pre><code>// Note: the key \"powderQuantity\" must be the exact spelling of your objects' property\nNSSortDescriptor *sortByQuantity = [NSSortDescriptor sortDescriptorWithKey:@\"powderQuantity\" \n                                                                 ascending:YES];\nNSArray *sortDescriptors = @[sortByQuantity];\nNSArray *sortedPowder = [arrayOfPowders sortedArrayUsingDescriptors:sortDescriptors];\n</code></pre>\n\n<p>Note that you can add more descriptors to the <code>sortDescriptors</code> as secondary/tertiary/... sorting when two <code>quantities</code> are equal.</p>\n"
+        },
+        {
+          "owner": {
+            "reputation": 18061,
+            "user_id": 205185,
+            "user_type": "registered",
+            "accept_rate": 54,
+            "profile_image": "http://i.stack.imgur.com/MwOW0.jpg?s=128&g=1",
+            "display_name": "Duncan C",
+            "link": "http://stackoverflow.com/users/205185/duncan-c"
+          },
+          "is_accepted": false,
+          "score": 0,
+          "last_activity_date": 1403487306,
+          "creation_date": 1403487306,
+          "answer_id": 24357377,
+          "question_id": 24356487,
+          "link": "http://stackoverflow.com/questions/24356487/how-to-sort-array-of-objects-with-ints-in-them-in-objective-c/24357377#24357377",
+          "body": "<p>There are probably a half-dozen ways to do this. Ryan provided one above (using a sort descriptor and sortedArrayUsingDescriptors.) </p>\n\n<p>I tend to prefer the sort methods that take a comparator block, like <code>sortedArrayUsingComparator:</code> (and it's variations)</p>\n\n<p>That code might look like this:</p>\n\n<pre><code>[arrayOfPowders sortedArrayUsingComparator: \n  ^(PowderObject obj1, PowderObject obj2) \n  {\n    if (obj1.powderQuantity) &lt; obj2.powderQuantity)\n      return NSOrderedAscending;\n    else if (obj1.powderQuantity) &lt; obj2.powderQuantity)\n      return NSOrderedDescending)\n    else\n      return NSOrderedSame;\n  }\n];\n</code></pre>\n\n<p>It's as much personal preference as anything.</p>\n\n<p>(If you need to sort based on multiple sort keys then Ryan's approach is easier. You just provide 2 sort descriptors in the call to sortedArrayUsingDescriptors.)</p>\n"
+        }
+      ],
+      "owner": {
+        "reputation": 3,
+        "user_id": 3001058,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/8562a394a9363d6aadcd37ce4d02dfef?s=128&d=identicon&r=PG&f=1",
+        "display_name": "user3001058",
+        "link": "http://stackoverflow.com/users/3001058/user3001058"
+      },
+      "is_answered": true,
+      "view_count": 38,
+      "accepted_answer_id": 24356711,
+      "answer_count": 2,
+      "score": -1,
+      "last_activity_date": 1403487306,
+      "creation_date": 1403477254,
+      "last_edit_date": 1403479921,
+      "question_id": 24356487,
+      "link": "http://stackoverflow.com/questions/24356487/how-to-sort-array-of-objects-with-ints-in-them-in-objective-c",
+      "title": "How to sort array of objects with ints in them in objective-c",
+      "body": "<p>I have an array of powders i'd like to sort buy how many pounds of them I have</p>\n\n<p>Each powder is a object with properties one of them being powderQuantity</p>\n\n<pre><code>@interface PowderObject : NSObject &lt;NSCoding&gt;\n\n@property (nonatomic, retain) NSString *powderName;\n\n//Powder Quantity is in pounds\n\n@property (nonatomic, assign) double powderQuantity;\n\n@property (nonatomic, assign) int numberID;\n\n@property (nonatomic, retain) NSString *description;\n\n@end\n</code></pre>\n\n<p>That is my header for the object I have been storing them in an array by</p>\n\n<pre><code>NSMutableArray *arrayOfPowders = [[PowderDataClass listPowders] mutableCopy];\n</code></pre>\n\n<p>That line returns all of the powders I have, and then after I get them I'd like to sort them by the weight left of them (powderQuantity). Highest goes first and the least goes last. I've tried using for loops, but have found them very inefficient, and haven't got them to work properly.</p>\n\n<p>Thanks for any help in advance</p>\n"
+    }
+  ],
+  "has_more": true,
+  "quota_max": 10000,
+  "quota_remaining": 9986
+}

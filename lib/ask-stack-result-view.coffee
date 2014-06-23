@@ -87,6 +87,14 @@ class AskStackResultView extends ScrollView
     curAnswer = 0
     quesId = question['question_id']
 
+    # This is mostly only rendered here and not with the question because we need
+    # the full question object to know how many answers there are. Might be a good
+    # thing to refactor this at some point and render the navigation with the answer.
+    if question['answer_count'] > 0
+      answer_tab = "<a href='#prev#{quesId}'><< Prev</a>   <span id='curAnswer-#{quesId}'>#{curAnswer+1}</span>/#{question['answers'].length}  <a href='#next#{quesId}'>Next >></a> "
+    else
+      answer_tab = "<br><b>This question has not been answered.</b>"
+
     # Leaving as HTML for now as space-pen doesn't support data-toggle attribute
     # Also struggling with <center> and the navigation link
     div = $('<div></div>', {
@@ -101,16 +109,27 @@ class AskStackResultView extends ScrollView
     <div class='tab-content'>
       <div class='tab-pane active' id='question-#{quesId}'>#{question['body']}</div>
       <div class='tab-pane answer-navigation' id='answers-#{quesId}'>
-        <center><a href='#prev#{quesId}'><< Prev</a>   <span id='curAnswer-#{quesId}'>#{curAnswer+1}</span>/#{question['answers'].length}  <a href='#next#{quesId}'>Next >></a> </center>
+        <center>#{answer_tab}</center>
       </div>
     </div>")
 
     $("##{quesId}").append(div)
 
-    @highlightCode(quesId)
-    @addCodeButtons(quesId)
-    @renderAnswerBody(question['answers'][curAnswer], quesId)
-    @setupClickEvents(question, curAnswer)
+    @highlightCode("question-#{quesId}")
+    @addCodeButtons("question-#{quesId}")
+    if question['answer_count'] > 0
+      @renderAnswerBody(question['answers'][curAnswer], quesId)
+      @setupNavigation(question, curAnswer)
+
+    # Question toggle button
+    $("#toggle-#{quesId}").click (event) ->
+      btn = $(this)
+      if ( $("#question-body-#{quesId}").hasClass('in') )
+        btn.parents("##{quesId}").append(btn.parent())
+        $(this).text('Show More')
+      else
+        btn.parent().siblings("#question-body-#{quesId}").append(btn.parent())
+        btn.text('Show Less')
 
   renderAnswerBody: (answer, question_id) ->
     answerHtml = $$$ ->
@@ -127,7 +146,7 @@ class AskStackResultView extends ScrollView
     @addCodeButtons("answers-#{question_id}")
 
   highlightCode: (elem_id) ->
-    pres = document.getElementById(elem_id).getElementsByTagName('pre');
+    pres = @resultsView.find("##{elem_id}").find('pre')
     for pre in pres
       code = $(pre).children('code').first()
       if(code != undefined)
@@ -135,7 +154,7 @@ class AskStackResultView extends ScrollView
         code.html(codeHl)
 
   addCodeButtons: (elem_id) ->
-    pres = document.getElementById(elem_id).getElementsByTagName('pre');
+    pres = @resultsView.find("##{elem_id}").find('pre')
     for pre in pres
       btnInsert = @genCodeButton('Insert')
       btnCopy = @genCodeButton('Copy')
@@ -176,18 +195,8 @@ class AskStackResultView extends ScrollView
     else
       $('#load-more').children().children('span').text('No more results to load.')
 
-  setupClickEvents: (question, curAnswer) ->
+  setupNavigation: (question, curAnswer) ->
     quesId = question['question_id']
-
-    # Question toggle button
-    $("#toggle-#{quesId}").click (event) ->
-      btn = $(this)
-      if ( $("#question-body-#{quesId}").hasClass('in') )
-        btn.parents("##{quesId}").append(btn.parent())
-        $(this).text('Show More')
-      else
-        btn.parent().siblings("#question-body-#{quesId}").append(btn.parent())
-        btn.text('Show Less')
 
     # Answers navigation
     $("a[href='#next#{quesId}']").click (event) =>
