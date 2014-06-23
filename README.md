@@ -1,4 +1,4 @@
-# Ask Stack Overflow for Atom
+# Ask Stack Overflow for Atom [![Build Status](https://travis-ci.org/Chris911/Ask-Stack-Atom.svg?branch=master)](https://travis-ci.org/Chris911/Ask-Stack-Atom)
 
 Quickly get answers and code samples from [Stack Overflow](http://stackoverflow.com/) directly in Atom editor. 
 
