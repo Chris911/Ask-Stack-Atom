@@ -1,7 +1,7 @@
 {
   "name": "ask-stack",
   "main": "./lib/ask-stack",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Quickly get answers and code samples from Stack Overflow in Atom",
   "activationEvents": [
     "ask-stack:ask-question"
