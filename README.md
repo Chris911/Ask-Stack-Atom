@@ -11,7 +11,7 @@ Quickly get answers and code samples from [Stack Overflow](http://stackoverflow.
 * Access to the number of votes, tags, accepted answer and more
 
 ## Usage 
-Toggle the Ask Stack Overlow form using `CTRL + ALT + A` or by typing `Ask Stack` in the command bar. 
+Toggle the Ask Stack Overflow form using `CTRL + ALT + A` or by typing `Ask Stack` in the command bar. 
 
 
 ## Installation 
