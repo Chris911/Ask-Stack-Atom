@@ -87,7 +87,7 @@ class AskStackResultView extends ScrollView
     curAnswer = 0
     quesId = question['question_id']
 
-    # This is mostly only rendered here and not with the question because we need
+    # This is mostly only rendered here and not with the answer because we need
     # the full question object to know how many answers there are. Might be a good
     # thing to refactor this at some point and render the navigation with the answer.
     if question['answer_count'] > 0
