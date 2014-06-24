@@ -65,7 +65,6 @@ class AskStackView extends View
     atom.workspaceView.append(this)
 
     @progressIndicator.hide()
-    test = @questionField
     @questionField.focus()
 
   askStackRequest: ->
