@@ -60,12 +60,16 @@ class AskStackView extends View
     @tagsField.on 'core:confirm', => @askStackRequest()
     @tagsField.on 'core:cancel', => @detach()
 
+    @subscribe atom.config.observe 'ask-stack.autoDetectLanguage', callNow: false, (autoDetect) =>
+      @tagsField.getEditor().setText("") unless autoDetect
+
   presentPanel: ->
-    this.show()
     atom.workspaceView.append(this)
 
     @progressIndicator.hide()
+    @tagsField.redraw()
     @questionField.focus()
+    @setLanguageField() if atom.config.get('ask-stack.autoDetectLanguage')
 
   askStackRequest: ->
     @progressIndicator.show()
@@ -76,13 +80,22 @@ class AskStackView extends View
     AskStackApiClient.sort_by = if @sortByVote.is(':checked') then 'votes' else 'relevance'
     AskStackApiClient.search (response) =>
       @progressIndicator.hide()
-      this.hide()
-      showResults(response)
+      this.detach()
+      @showResults(response)
 
-  showResults = (answersJson) ->
+  showResults: (answersJson) ->
     uri = 'ask-stack://result-view'
 
     atom.workspace.open(uri, split: 'right', searchAllPanes: true).done (askStackResultView) ->
       if askStackResultView instanceof AskStackResultView
         askStackResultView.renderAnswers(answersJson)
         atom.workspace.activatePreviousPane()
+
+  setLanguageField: ->
+    lang = @getCurrentLanguage()
+    return if lang == null or lang == 'Null Grammar'
+    @tagsField.getEditor().setText(lang)
+
+  getCurrentLanguage: ->
+    editor = atom.workspace.getActiveEditor()
+    if editor == undefined then null else editor.getGrammar().name
