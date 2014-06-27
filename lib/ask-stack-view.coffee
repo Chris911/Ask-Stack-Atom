@@ -62,12 +62,15 @@ class AskStackView extends View
 
     @subscribe atom.config.observe 'ask-stack.autoDetectLanguage', callNow: false, (autoDetect) =>
       @tagsField.getEditor().setText("") unless autoDetect
+      @needRedraw = true
 
   presentPanel: ->
     atom.workspaceView.append(this)
 
     @progressIndicator.hide()
-    @tagsField.redraw()
+    if @needRedraw
+      @tagsField.redraw()
+      @needRedraw = false
     @questionField.focus()
     @setLanguageField() if atom.config.get('ask-stack.autoDetectLanguage')
 
