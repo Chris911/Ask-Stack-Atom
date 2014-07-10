@@ -84,7 +84,10 @@ class AskStackView extends View
     AskStackApiClient.search (response) =>
       @progressIndicator.hide()
       this.detach()
-      @showResults(response)
+      if response == null
+        alert('Encountered a problem with the Stack Exchange API')
+      else
+        @showResults(response)
 
   showResults: (answersJson) ->
     uri = 'ask-stack://result-view'

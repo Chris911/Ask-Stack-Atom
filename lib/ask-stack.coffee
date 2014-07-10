@@ -2,7 +2,7 @@ AskStackView = require './ask-stack-view'
 
 module.exports =
   configDefaults:
-    autoDetectLanguage: false
+    autoDetectLanguage: true
   askStackView: null
 
   activate: (state) ->

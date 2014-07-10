@@ -8,7 +8,7 @@ module.exports =
 # views easily. This way we can load more results by keeping track of the last
 # requested page. If at some point we decide we can have more than one result
 # page at the same time this class should be instanciated and passed from the
-# 'Ask Stack' view to the result view. 
+# 'Ask Stack' view to the result view.
 #
 class AskStackApiClient
 
@@ -44,8 +44,12 @@ class AskStackApiClient
         gunzip.on 'end', ->
           #debugger
           body = buffer.join("")
-          response = JSON.parse(body)
-          callback(response)
+          try
+            response = JSON.parse(body)
+          catch
+            response = null
+          finally
+            callback(response)
 
         gunzip.on 'error', (e) ->
           console.log "Error: #{e.message}"
