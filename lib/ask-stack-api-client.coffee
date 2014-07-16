@@ -1,5 +1,4 @@
-https = require 'https'
-zlib = require 'zlib'
+request = require 'request'
 
 module.exports =
 #
@@ -19,9 +18,9 @@ class AskStackApiClient
   @sort_by = 'votes'
 
   @search: (callback) ->
-      options =
-        hostname: 'api.stackexchange.com'
-        path: "/2.2/search/advanced?pagesize=5&" +
+    options =
+      uri: "https://api.stackexchange.com" +
+        "/2.2/search/advanced?pagesize=5&" +
         "page=#{@page}&" +
         "order=desc&" +
         "sort=#{@sort_by}&" +
@@ -29,32 +28,23 @@ class AskStackApiClient
         "tagged=#{encodeURIComponent(@tag.trim())}&" +
         "site=stackoverflow&" +
         "filter=!b0OfNKD*3O569e"
-        method: 'GET'
-        headers:
-          'User-Agent': 'Atom-Ask-Stack'
-          'accept-encoding' : 'gzip'
+      method: 'GET'
+      gzip: true
+      headers:
+        'User-Agent': 'Atom-Ask-Stack'
 
-      request = https.request options, (res) ->
-        buffer = []
-        gunzip = zlib.createGunzip();
-        res.pipe(gunzip)
-
-        gunzip.on 'data', (chunk) ->
-          buffer.push(chunk.toString())
-        gunzip.on 'end', ->
-          #debugger
-          body = buffer.join("")
-          try
-            response = JSON.parse(body)
-          catch
-            response = null
-          finally
-            callback(response)
-
-        gunzip.on 'error', (e) ->
-          console.log "Error: #{e.message}"
-
-      request.end()
+    request options, (error, res, body) ->
+      if not error and res.statusCode is 200
+        try
+          response = JSON.parse(body)
+        catch
+          console.log "Error: Invalid JSON"
+          response = null
+        finally
+          callback(response)
+      else
+        console.log "Error: #{error}"
+        response = null
 
   @resetInputs: ->
     @question = ''

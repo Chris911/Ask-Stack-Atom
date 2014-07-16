@@ -16,6 +16,7 @@
     "atom": ">0.50.0"
   },
   "dependencies": {
+    "request": "2.x",
     "highlight.js": "8.x",
     "copy-paste": "0.2.x"
   }
