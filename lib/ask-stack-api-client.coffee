@@ -33,6 +33,8 @@ class AskStackApiClient
       headers:
         'User-Agent': 'Atom-Ask-Stack'
 
+    options.proxy = process.env.http_proxy if process.env.http_proxy?
+
     request options, (error, res, body) ->
       if not error and res.statusCode is 200
         try
@@ -43,7 +45,7 @@ class AskStackApiClient
         finally
           callback(response)
       else
-        console.log "Error: #{error}"
+        console.log "Error: #{error}", "Result: ", res
         response = null
 
   @resetInputs: ->
