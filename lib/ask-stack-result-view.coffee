@@ -1,7 +1,6 @@
 {$, $$$, ScrollView} = require 'atom-space-pen-views'
 AskStackApiClient = require './ask-stack-api-client'
 hljs = require 'highlight.js'
-clipboard = require 'clipboard'
 
 window.jQuery = $
 require './vendor/bootstrap.min.js'
@@ -158,9 +157,7 @@ class AskStackResultView extends ScrollView
     pres = @resultsView.find("##{elem_id}").find('pre')
     for pre in pres
       btnInsert = @genCodeButton('Insert')
-      btnCopy = @genCodeButton('Copy')
       $(pre).prev().after(btnInsert)
-      $(pre).prev().after(btnCopy)
 
   genCodeButton: (type) ->
     btn = $('<button/>',
@@ -168,12 +165,6 @@ class AskStackResultView extends ScrollView
         text: type,
         class: 'btn btn-default btn-xs'
     })
-    if type == 'Copy'
-      $(btn).click (event) ->
-        code = $(this).next('pre').text()
-        clipboard.writeText(code) if code != undefined
-        atom.workspace.activatePreviousPane()
-
     if type == 'Insert'
       $(btn).click (event) ->
         code = $(this).next().next('pre').text()

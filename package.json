@@ -18,7 +18,6 @@
   "dependencies": {
     "atom-space-pen-views": "^2.0.3",
     "request": "2.x",
-    "highlight.js": "8.x",
-    "clipboard": "0.1.1"
+    "highlight.js": "8.x"
   }
 }
