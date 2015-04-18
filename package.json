@@ -16,8 +16,9 @@
     "atom": ">0.50.0"
   },
   "dependencies": {
+    "atom-space-pen-views": "^2.0.3",
     "request": "2.x",
     "highlight.js": "8.x",
-    "copy-paste": "0.2.x"
+    "clipboard": "0.1.1"
   }
 }

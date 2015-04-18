@@ -1,7 +1,7 @@
-{$, $$$, ScrollView} = require 'atom'
+{$, $$$, ScrollView} = require 'atom-space-pen-views'
 AskStackApiClient = require './ask-stack-api-client'
 hljs = require 'highlight.js'
-clipboard = require 'copy-paste'
+clipboard = require 'clipboard'
 
 window.jQuery = $
 require './vendor/bootstrap.min.js'
@@ -20,13 +20,10 @@ class AskStackResultView extends ScrollView
   initialize: ->
     super
 
-  destroy: ->
-    @unsubscribe()
-
   getTitle: ->
     'Ask Stack Results'
 
-  getUri: ->
+  getURI: ->
     'ask-stack://result-view'
 
   getIconName: ->
@@ -99,14 +96,14 @@ class AskStackResultView extends ScrollView
     # Also struggling with <center> and the navigation link
     div = $('<div></div>', {
       id: "question-body-#{question['question_id']}"
-      class: "collapse"
+      class: "collapse hidden"
       })
     div.html("
     <ul class='nav nav-tabs nav-justified'>
       <li class='active'><a href='#question-#{quesId}' data-toggle='tab'>Question</a></li>
       <li><a href='#answers-#{quesId}' data-toggle='tab'>Answers</a></li>
     </ul>
-    <div class='tab-content'>
+    <div id='question-body-#{question['question_id']}-nav' class='tab-content hidden'>
       <div class='tab-pane active' id='question-#{quesId}'>#{question['body']}</div>
       <div class='tab-pane answer-navigation' id='answers-#{quesId}'>
         <center>#{answer_tab}</center>
@@ -125,9 +122,13 @@ class AskStackResultView extends ScrollView
     $("#toggle-#{quesId}").click (event) ->
       btn = $(this)
       if ( $("#question-body-#{quesId}").hasClass('in') )
+        $("#question-body-#{quesId}").addClass('hidden')
+        $("#question-body-#{quesId}-nav").addClass('hidden')
         btn.parents("##{quesId}").append(btn.parent())
         $(this).text('Show More')
       else
+        $("#question-body-#{quesId}").removeClass('hidden')
+        $("#question-body-#{quesId}-nav").removeClass('hidden')
         btn.parent().siblings("#question-body-#{quesId}").append(btn.parent())
         btn.text('Show Less')
 
@@ -170,7 +171,7 @@ class AskStackResultView extends ScrollView
     if type == 'Copy'
       $(btn).click (event) ->
         code = $(this).next('pre').text()
-        clipboard.copy(code) if code != undefined
+        clipboard.writeText(code) if code != undefined
         atom.workspace.activatePreviousPane()
 
     if type == 'Insert'

@@ -1,6 +1,7 @@
 url = require 'url'
 
-{EditorView, View} = require 'atom'
+{CompositeDisposable} = require 'atom'
+{TextEditorView, View} = require 'atom-space-pen-views'
 
 AskStack = require './ask-stack'
 AskStackApiClient = require './ask-stack-api-client'
@@ -15,8 +16,8 @@ class AskStackView extends View
           @span 'Ask Stack Overflow'
         @div class: 'panel-body padded', =>
           @div =>
-            @subview 'questionField', new EditorView(mini:true, placeholderText: 'Question (eg. Sort array)')
-            @subview 'tagsField', new EditorView(mini:true, placeholderText: 'Language / Tags (eg. Ruby;Rails)')
+            @subview 'questionField', new TextEditorView(mini:true, placeholderText: 'Question (eg. Sort array)')
+            @subview 'tagsField', new TextEditorView(mini:true, placeholderText: 'Language / Tags (eg. Ruby;Rails)')
             @div class: 'pull-right', =>
               @button outlet: 'askButton', class: 'btn btn-primary', ' Ask! '
             @div class: 'pull-left', =>
@@ -32,9 +33,16 @@ class AskStackView extends View
   initialize: (serializeState) ->
     @handleEvents()
 
-    atom.workspaceView.command 'ask-stack:ask-question', => @presentPanel()
+    @subscriptions = new CompositeDisposable
 
-    atom.workspace.registerOpener (uriToOpen) ->
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'ask-stack:ask-question', => @presentPanel()
+
+    @autoDetectObserveSubscription =
+      atom.config.observe 'ask-stack.autoDetectLanguage', (autoDetect) =>
+        _this.tagsField.setText("") unless autoDetect
+
+    atom.workspace.addOpener (uriToOpen) ->
       try
         {protocol, host, pathname} = url.parse(uriToOpen)
       catch error
@@ -49,28 +57,28 @@ class AskStackView extends View
 
   # Tear down any state and detach
   destroy: ->
+    @hideView()
     @detach()
+
+  hideView: ->
+    @panel.hide()
+    @.focusout()
 
   handleEvents: ->
     @askButton.on 'click', => @askStackRequest()
 
     @questionField.on 'core:confirm', => @askStackRequest()
-    @questionField.on 'core:cancel', => @detach()
+    @questionField.on 'core:cancel', => @hideView()
 
     @tagsField.on 'core:confirm', => @askStackRequest()
-    @tagsField.on 'core:cancel', => @detach()
-
-    @subscribe atom.config.observe 'ask-stack.autoDetectLanguage', callNow: false, (autoDetect) =>
-      @tagsField.getEditor().setText("") unless autoDetect
-      @needRedraw = true
+    @tagsField.on 'core:cancel', => @hideView()
 
   presentPanel: ->
-    atom.workspaceView.append(this)
+    #atom.workspaceView.append(this)
+    @panel ?= atom.workspace.addModalPanel(item: @, visible: true)
 
+    @panel.show()
     @progressIndicator.hide()
-    if @needRedraw
-      @tagsField.redraw()
-      @needRedraw = false
     @questionField.focus()
     @setLanguageField() if atom.config.get('ask-stack.autoDetectLanguage')
 
@@ -83,7 +91,7 @@ class AskStackView extends View
     AskStackApiClient.sort_by = if @sortByVote.is(':checked') then 'votes' else 'relevance'
     AskStackApiClient.search (response) =>
       @progressIndicator.hide()
-      this.detach()
+      this.hideView()
       if response == null
         alert('Encountered a problem with the Stack Exchange API')
       else
@@ -100,8 +108,8 @@ class AskStackView extends View
   setLanguageField: ->
     lang = @getCurrentLanguage()
     return if lang == null or lang == 'Null Grammar'
-    @tagsField.getEditor().setText(lang)
+    @tagsField.setText(lang)
 
   getCurrentLanguage: ->
-    editor = atom.workspace.getActiveEditor()
+    editor = atom.workspace.getActiveTextEditor()
     if editor == undefined then null else editor.getGrammar().name
