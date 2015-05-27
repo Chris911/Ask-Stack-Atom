@@ -1,6 +1,6 @@
 url = require 'url'
 
-{CompositeDisposable} = require 'atom'
+{CompositeDisposable} = require 'event-kit'
 {TextEditorView, View} = require 'atom-space-pen-views'
 
 AskStack = require './ask-stack'
@@ -19,8 +19,10 @@ class AskStackView extends View
             @subview 'questionField', new TextEditorView(mini:true, placeholderText: 'Question (eg. Sort array)')
             @subview 'tagsField', new TextEditorView(mini:true, placeholderText: 'Language / Tags (eg. Ruby;Rails)')
             @div class: 'pull-right', =>
+              @br()
               @button outlet: 'askButton', class: 'btn btn-primary', ' Ask! '
             @div class: 'pull-left', =>
+              @br()
               @label 'Sort by:'
               @br()
               @label for: 'relevance', class: 'radio-label', 'Relevance: '
@@ -31,13 +33,12 @@ class AskStackView extends View
             @span class: 'loading loading-spinner-medium'
 
   initialize: (serializeState) ->
-    @handleEvents()
-
     @subscriptions = new CompositeDisposable
-
     @subscriptions.add atom.commands.add 'atom-workspace',
       'ask-stack:ask-question', => @presentPanel()
-
+    
+    @handleEvents() 
+    
     @autoDetectObserveSubscription =
       atom.config.observe 'ask-stack.autoDetectLanguage', (autoDetect) =>
         _this.tagsField.setText("") unless autoDetect
@@ -64,14 +65,19 @@ class AskStackView extends View
     @panel.hide()
     @.focusout()
 
+  onDidChangeTitle: -> 
+  onDidChangeModified: -> 
+
   handleEvents: ->
     @askButton.on 'click', => @askStackRequest()
 
-    @questionField.on 'core:confirm', => @askStackRequest()
-    @questionField.on 'core:cancel', => @hideView()
+    @subscriptions.add atom.commands.add @questionField.element,
+      'core:confirm': => @askStackRequest()
+      'core:cancel': => @hideView()
 
-    @tagsField.on 'core:confirm', => @askStackRequest()
-    @tagsField.on 'core:cancel', => @hideView()
+    @subscriptions.add atom.commands.add @tagsField.element,
+      'core:confirm': => @askStackRequest()
+      'core:cancel': => @hideView()
 
   presentPanel: ->
     #atom.workspaceView.append(this)
