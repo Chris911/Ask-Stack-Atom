@@ -28,6 +28,9 @@ class AskStackResultView extends ScrollView
   getIconName: ->
     'three-bars'
 
+  onDidChangeTitle: -> 
+  onDidChangeModified: -> 
+
   handleEvents: ->
     @subscribe this, 'core:move-up', => @scrollUp()
     @subscribe this, 'core:move-down', => @scrollDown()
@@ -167,10 +170,11 @@ class AskStackResultView extends ScrollView
     })
     if type == 'Insert'
       $(btn).click (event) ->
-        code = $(this).next().next('pre').text()
+        code = $(this).next('pre').text()
         if code != undefined
           atom.workspace.activatePreviousPane()
-          editor = atom.workspace.activePaneItem
+          # editor = atom.workspace.activePaneItem
+          editor = atom.workspace.getActivePaneItem()
           editor.insertText(code)
 
     return btn
