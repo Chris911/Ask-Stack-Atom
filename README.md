@@ -1,8 +1,8 @@
 # Ask Stack Overflow for Atom [![Build Status](https://travis-ci.org/Chris911/Ask-Stack-Atom.svg?branch=master)](https://travis-ci.org/Chris911/Ask-Stack-Atom)
 
-Quickly get answers and code samples from [Stack Overflow](http://stackoverflow.com/) directly in Atom editor. 
+Quickly get answers and code samples from [Stack Overflow](https://stackoverflow.com/) directly in Atom editor. 
 
-![Preview](http://i.imgur.com/ynZlOAT.gif)
+![Preview](https://i.imgur.com/ynZlOAT.gif)
 
 ## Features
 * Insert or copy code samples with the click of a button
