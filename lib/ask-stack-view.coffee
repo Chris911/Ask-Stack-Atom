@@ -36,9 +36,9 @@ class AskStackView extends View
     @subscriptions = new CompositeDisposable
     @subscriptions.add atom.commands.add 'atom-workspace',
       'ask-stack:ask-question', => @presentPanel()
-    
-    @handleEvents() 
-    
+
+    @handleEvents()
+
     @autoDetectObserveSubscription =
       atom.config.observe 'ask-stack.autoDetectLanguage', (autoDetect) =>
         _this.tagsField.setText("") unless autoDetect
@@ -65,8 +65,8 @@ class AskStackView extends View
     @panel.hide()
     @.focusout()
 
-  onDidChangeTitle: -> 
-  onDidChangeModified: -> 
+  onDidChangeTitle: ->
+  onDidChangeModified: ->
 
   handleEvents: ->
     @askButton.on 'click', => @askStackRequest()
@@ -106,7 +106,7 @@ class AskStackView extends View
   showResults: (answersJson) ->
     uri = 'ask-stack://result-view'
 
-    atom.workspace.open(uri, split: 'right', searchAllPanes: true).done (askStackResultView) ->
+    atom.workspace.open(uri, split: 'right', searchAllPanes: true).then (askStackResultView) ->
       if askStackResultView instanceof AskStackResultView
         askStackResultView.renderAnswers(answersJson)
         atom.workspace.activatePreviousPane()
