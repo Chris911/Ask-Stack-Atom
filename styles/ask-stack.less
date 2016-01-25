@@ -171,13 +171,41 @@
       position: absolute;
       left: -60px;
       top: 1px;
-      background: green;
+      background: white;
       border-radius:5px;
       width:50px;
       height:25px;
     }
     .score p {
-      color: #fff;
+      color: gray;
+      text-align: center;
+      font-size: 0.8em;
+    }
+    .answers {
+      position: absolute;
+      left: -60px;
+      top: 31px;
+      background: green;
+      border-radius:5px;
+      width:50px;
+      height:25px;
+    }
+    .answers p {
+      color: greenyellow;
+      text-align: center;
+      font-size: 0.8em;
+    }
+    .is-accepted {
+      position: absolute;
+      left: -60px;
+      top: 61px;
+      background: transparent;
+      border-radius:5px;
+      width:50px;
+      height:25px;
+    }
+    .is-accepted p {
+      color: black;
       text-align: center;
       font-size: 0.8em;
     }
@@ -189,14 +217,36 @@
     position: relative;
     left: -60px;
     top: 1px;
-    background: green;
+    background: white;
     border-radius:5px;
     width:50px;
     height:25px;
-    color: #fff;
+    color: grey;
+    //font-weight: bold;
     text-align: center;
     font-size:1.2em;
   }
+
+  .score.is-accepted {
+    font-family: 'Lucida Grande', 'Segoe UI', sans-serif;
+    margin-top: -15px;
+    position: relative;
+    left: -60px;
+    top: 21px;
+    background: transparent;
+    border-radius:5px;
+    width:50px;
+    height:25px;
+    color: green;
+    text-align: center;
+    font-size:1.2em;
+  }
+
+  .answer-navigation div .created {
+    background: peachpuff;
+    border-radius: 5px;
+    text-align: center;
+}
 
   .answer-link {
     position: relative;
