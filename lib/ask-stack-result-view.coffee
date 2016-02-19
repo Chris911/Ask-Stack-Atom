@@ -57,11 +57,13 @@ class AskStackResultView extends ScrollView
     title = $('<div/>').html(question['title']).text();
     # Decode display_name html entities
     display_name = $('<textarea />').html(question['owner'].display_name).text();
+    # Store the question id.
+    question_id = question['question_id'];
 
     questionHeader = $$$ ->
       @div id: question['question_id'], class: 'ui-result', =>
         @h2 class: 'title', =>
-          @a href: question['link'], class: 'underline title-string', title
+          @a href: question['link'], id: "question-link-#{question_id}", class: 'underline title-string', title
           # Added tooltip to explain that the value is the number of votes
           @div class: 'score', title: question['score'] + ' Votes', =>
             @p question['score']
@@ -75,7 +77,7 @@ class AskStackResultView extends ScrollView
           @text new Date(question['creation_date'] * 1000).toLocaleString()
           # Added credits of who asked the question, with a link back to their profile
           @text ' - asked by '
-          @a href: question['owner'].link, display_name
+          @a href: question['owner'].link, id: "question-author-link-#{question_id}", display_name
         @div class: 'tags', =>
           for tag in question['tags']
             @span class: 'label label-info', tag
@@ -128,7 +130,7 @@ class AskStackResultView extends ScrollView
     $("##{quesId}").append(div)
 
     @highlightCode("question-#{quesId}")
-    @addCodeButtons("question-#{quesId}")
+    @addCodeButtons("question-#{quesId}", quesId, 'question')
     if question['answer_count'] > 0
       @renderAnswerBody(question['answers'][curAnswer], quesId)
       @setupNavigation(question, curAnswer)
@@ -155,8 +157,8 @@ class AskStackResultView extends ScrollView
 
     answerHtml = $$$ ->
       @div =>
-        @a href: answer['link'], =>
-          @span class: 'answer-link', id: "answer-link-#{answer_id}", title: 'View this answer in a browser', '➚'
+        @a href: answer['link'], id: "answer-link-#{answer_id}", =>
+          @span class: 'answer-link', title: 'View this answer in a browser', '➚'
         @span class: 'label label-success', 'Accepted' if answer['is_accepted']
         # Added tooltip to explain that the value is the number of votes
         @div class: 'score answer', title: answer['score'] + ' Votes', =>
@@ -173,7 +175,7 @@ class AskStackResultView extends ScrollView
     $("#answers-#{question_id}").append($(answerHtml).append(answer['body']))
 
     @highlightCode("answers-#{question_id}")
-    @addCodeButtons("answers-#{question_id}", answer_id)
+    @addCodeButtons("answers-#{question_id}", answer_id, 'answer')
 
   highlightCode: (elem_id) ->
     pres = @resultsView.find("##{elem_id}").find('pre')
@@ -183,21 +185,23 @@ class AskStackResultView extends ScrollView
         codeHl =  hljs.highlightAuto(code.text()).value
         code.html(codeHl)
 
-  addCodeButtons: (elem_id, answer_id) ->
+  addCodeButtons: (elem_id, id, id_type) ->
+    console.log(id, id_type);
     pres = @resultsView.find("##{elem_id}").find('pre')
     for pre in pres
-      btnInsert = @genCodeButton('Insert', answer_id)
+      btnInsert = @genCodeButton('Insert', id, id_type)
       $(pre).prev().after(btnInsert)
 
-  genCodeButton: (type, answer_id) ->
+  genCodeButton: (type, id, id_type) ->
+    console.log(id, id_type);
     # Attribute author
-    if answer_id != undefined
-      author_src = $("#answer-author-link-#{answer_id}").attr('href');
-      author_name = $("#answer-author-link-#{answer_id}").html();
-      answer_src = $("#answer-link-#{answer_id}").parent('a').attr('href');
-      answer = true;
+    if id != undefined
+      author_src = $("##{id_type}-author-link-#{id}").attr('href');
+      author_name = $("##{id_type}-author-link-#{id}").html();
+      source_src = $("##{id_type}-link-#{id}").attr('href');
+      qa = true;
     else
-      answer = false;
+      qa = false;
 
     btn = $('<button/>',
     {
@@ -211,14 +215,14 @@ class AskStackResultView extends ScrollView
           atom.workspace.activatePreviousPane()
           # editor = atom.workspace.activePaneItem
           editor = atom.workspace.getActivePaneItem()
-          if answer == true
+          if qa == true
             editor.insertText("Insert from Stack Overflow", {select: true})
             editor.toggleLineCommentsInSelection();
             editor.insertNewlineBelow();
             editor.insertText("Author: #{author_name} - #{author_src}", {select: true})
             editor.toggleLineCommentsInSelection();
             editor.insertNewlineBelow();
-            editor.insertText("Answer: #{answer_src}", {select: true})
+            editor.insertText("Source: #{source_src}", {select: true})
             editor.toggleLineCommentsInSelection();
             editor.insertNewlineBelow();
           editor.insertText(code, {select: false})
