@@ -4,6 +4,21 @@
 @resultBorderRightColor: #fd8a07;
 @resultBoxShadowColor: rgba(250,250,250,0.7);
 @hoverColor: #DADADD;
+@badgeAnswerBgColor: green;
+@badgeAnswerColor: greenyellow;
+@badgeScoreBgColor: white;
+@badgeScoreColor: gray;
+@tickQuestionHasAcceptedAnswerColor: black;
+@tickAcceptedAnswerColor: green;
+@badgeAnswerAuthorBgColor: peachpuff;
+@linkColor: #428bca;
+@loadMoreTextColor: #A2A1A1;
+@loadMoreTextHoverColor: #DCDCDC;
+@mainWindowBgColor: #333232;
+@mainWindowColor: #fff;
+@tabTextColor: #000;
+@tabTextHoverColor: #000;
+@inlineCodeTextColor: #c7254e;
 
 .ask-stack {
   .loading {
@@ -16,8 +31,8 @@
 .ask-stack-result {
   font-size: 14px;
   line-height: 1.6;
-  background-color: #333232;
-  color: #fff;
+  background-color: @mainWindowBgColor;
+  color: @mainWindowColor;
   overflow: scroll;
   padding: 15px;
 }
@@ -40,8 +55,8 @@
   margin-left: 60px;
   text-align: center;
   span {
-    color: #A2A1A1;
-    &:hover { color: #DCDCDC; }
+    color: @loadMoreTextColor;
+    &:hover { color: @loadMoreTextHoverColor; }
   }
   a { text-decoration: none; }
 }
@@ -72,29 +87,29 @@
     border-radius: 4px 4px 0 0;
     li a {
       border-radius: 7px 7px 0 0;
-      color: #000;
+      color: @tabTextColor;
       &:hover {
         background-color: #e9e9e9;
-        color: #000;
+        color: @tabTextHoverColor;
       }
     }
     li.active a {
       border-radius: 7px 7px 0 0;
       background-color: @hoverColor;
-      color: #000;
+      color: @tabTextColor;
       border-bottom-color: @hoverColor;
     }
     .active a {
       &:hover {
         background-color: @hoverColor;
-        color: #000;
+        color: @tabTextHoverColor;
         border-bottom-color: @hoverColor;
       }
     }
   }
 
   a {
-    color: #428bca;
+    color: @linkColor;
     word-wrap: break-word;
   }
 
@@ -154,7 +169,7 @@
     position: relative;
     float: right;
     font-size: 80%;
-    padding: .4em .8em .3em
+    padding: .4em .8em .3em;
   }
 
   .title {
@@ -172,13 +187,13 @@
       position: absolute;
       left: -60px;
       top: 1px;
-      background: white;
+      background: @badgeScoreBgColor;
       border-radius:5px;
       width:50px;
       height:25px;
     }
     .score p {
-      color: gray;
+      color: @badgeScoreColor;
       text-align: center;
       font-size: 0.8em;
     }
@@ -186,13 +201,13 @@
       position: absolute;
       left: -60px;
       top: 31px;
-      background: green;
+      background: @badgeAnswerBgColor;
       border-radius:5px;
       width:50px;
       height:25px;
     }
     .answers p {
-      color: greenyellow;
+      color: @badgeAnswerColor;
       text-align: center;
       font-size: 0.8em;
     }
@@ -206,7 +221,7 @@
       height:25px;
     }
     .is-accepted p {
-      color: black;
+      color: @tickQuestionHasAcceptedAnswerColor;
       text-align: center;
       font-size: 0.8em;
     }
@@ -218,11 +233,11 @@
     position: relative;
     left: -60px;
     top: 1px;
-    background: white;
+    background: @badgeScoreBgColor;
     border-radius:5px;
     width:50px;
     height:25px;
-    color: grey;
+    color: @badgeScoreColor;
     //font-weight: bold;
     text-align: center;
     font-size:1.2em;
@@ -238,13 +253,13 @@
     border-radius:5px;
     width:50px;
     height:25px;
-    color: green;
+    color: @tickAcceptedAnswerColor;
     text-align: center;
     font-size:1.2em;
   }
 
   .answer-navigation div .created {
-    background: peachpuff;
+    background: @badgeAnswerAuthorBgColor;
     border-radius: 5px;
     text-align: center;
 }
@@ -267,7 +282,7 @@
   }
 
   code {
-    color: #c7254e
+    color: @inlineCodeTextColor;
   }
 
   .created {
