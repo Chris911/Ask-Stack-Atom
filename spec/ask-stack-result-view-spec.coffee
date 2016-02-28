@@ -1,13 +1,9 @@
-{$, EditorView, WorkspaceView} = require 'atom'
-
 AskStackResultView = require '../lib/ask-stack-result-view'
 
 describe "AskStackResultView", ->
   resultView = null
 
   beforeEach ->
-    atom.workspaceView = new WorkspaceView
-
     resultView = new AskStackResultView()
 
   describe "when search returns no result", ->
