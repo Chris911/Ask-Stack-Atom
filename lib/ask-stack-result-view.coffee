@@ -158,7 +158,7 @@ class AskStackResultView extends ScrollView
     answerHtml = $$$ ->
       @div =>
         @a href: answer['link'], id: "answer-link-#{answer_id}", =>
-          @span class: 'answer-link', title: 'View this answer in a browser', '➚'
+          @span class: 'answer-link', title: 'Open in browser', '➚'
         @span class: 'label label-success', 'Accepted' if answer['is_accepted']
         # Added tooltip to explain that the value is the number of votes
         @div class: 'score answer', title: answer['score'] + ' Votes', =>
@@ -186,23 +186,12 @@ class AskStackResultView extends ScrollView
         code.html(codeHl)
 
   addCodeButtons: (elem_id, id, id_type) ->
-    console.log(id, id_type);
     pres = @resultsView.find("##{elem_id}").find('pre')
     for pre in pres
       btnInsert = @genCodeButton('Insert', id, id_type)
       $(pre).prev().after(btnInsert)
 
   genCodeButton: (type, id, id_type) ->
-    console.log(id, id_type);
-    # Attribute author
-    if id != undefined
-      author_src = $("##{id_type}-author-link-#{id}").attr('href');
-      author_name = $("##{id_type}-author-link-#{id}").html();
-      source_src = $("##{id_type}-link-#{id}").attr('href');
-      qa = true;
-    else
-      qa = false;
-
     btn = $('<button/>',
     {
         text: type,
@@ -215,10 +204,13 @@ class AskStackResultView extends ScrollView
           atom.workspace.activatePreviousPane()
           # editor = atom.workspace.activePaneItem
           editor = atom.workspace.getActivePaneItem()
-          if qa == true
-            editor.insertText("Insert from Stack Overflow", {select: true})
-            editor.toggleLineCommentsInSelection();
-            editor.insertNewlineBelow();
+          if id != undefined
+            # Attribute author
+            author_src = $("##{id_type}-author-link-#{id}").attr('href');
+            author_name = $("##{id_type}-author-link-#{id}").html();
+            source_src = $("##{id_type}-link-#{id}").attr('href');
+
+            # Insert the information
             editor.insertText("Author: #{author_name} - #{author_src}", {select: true})
             editor.toggleLineCommentsInSelection();
             editor.insertNewlineBelow();
