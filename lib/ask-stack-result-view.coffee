@@ -204,21 +204,30 @@ class AskStackResultView extends ScrollView
           atom.workspace.activatePreviousPane()
           # editor = atom.workspace.activePaneItem
           editor = atom.workspace.getActivePaneItem()
+
+          # Check if an id was passed in to find information about the author and source
           if id != undefined
-            # Attribute author
+            # Get the attribute author and source information
             author_src = $("##{id_type}-author-link-#{id}").attr('href');
             author_name = $("##{id_type}-author-link-#{id}").html();
             source_src = $("##{id_type}-link-#{id}").attr('href');
 
-            # Insert the information
-            editor.insertText("Author: #{author_name} - #{author_src}", {select: true})
-            editor.toggleLineCommentsInSelection();
-            editor.insertNewlineBelow();
-            editor.insertText("Source: #{source_src}", {select: true})
-            editor.toggleLineCommentsInSelection();
-            editor.insertNewlineBelow();
-          editor.insertText(code, {select: false})
+            # Transact the following additions so that they are all in one undo instance
+            editor.transact =>
+              # Insert the author information
+              editor.insertText("Author: #{author_name} - #{author_src}", {select: true})
+              editor.toggleLineCommentsInSelection();
+              editor.insertNewlineBelow();
 
+              # Insert the source information
+              editor.insertText("Source: #{source_src}", {select: true})
+              editor.toggleLineCommentsInSelection();
+              editor.insertNewlineBelow();
+
+              # Insert the code
+              editor.insertText(code);
+          else
+            editor.insertText(code)
     return btn
 
   loadMoreResults: ->
