@@ -28,8 +28,8 @@ class AskStackResultView extends ScrollView
   getIconName: ->
     'three-bars'
 
-  onDidChangeTitle: -> 
-  onDidChangeModified: -> 
+  onDidChangeTitle: ->
+  onDidChangeModified: ->
 
   handleEvents: ->
     @subscribe this, 'core:move-up', => @scrollUp()
@@ -57,10 +57,13 @@ class AskStackResultView extends ScrollView
     title = $('<div/>').html(question['title']).text();
     # Decode display_name html entities
     display_name = $('<textarea />').html(question['owner'].display_name).text();
+    # Store the question id.
+    question_id = question['question_id'];
+
     questionHeader = $$$ ->
       @div id: question['question_id'], class: 'ui-result', =>
         @h2 class: 'title', =>
-          @a href: question['link'], class: 'underline title-string', title
+          @a href: question['link'], id: "question-link-#{question_id}", class: 'underline title-string', title
           # Added tooltip to explain that the value is the number of votes
           @div class: 'score', title: question['score'] + ' Votes', =>
             @p question['score']
@@ -74,7 +77,7 @@ class AskStackResultView extends ScrollView
           @text new Date(question['creation_date'] * 1000).toLocaleString()
           # Added credits of who asked the question, with a link back to their profile
           @text ' - asked by '
-          @a href: question['owner'].link, display_name
+          @a href: question['owner'].link, id: "question-author-link-#{question_id}", display_name
         @div class: 'tags', =>
           for tag in question['tags']
             @span class: 'label label-info', tag
@@ -127,7 +130,7 @@ class AskStackResultView extends ScrollView
     $("##{quesId}").append(div)
 
     @highlightCode("question-#{quesId}")
-    @addCodeButtons("question-#{quesId}")
+    @addCodeButtons("question-#{quesId}", quesId, 'question')
     if question['answer_count'] > 0
       @renderAnswerBody(question['answers'][curAnswer], quesId)
       @setupNavigation(question, curAnswer)
@@ -149,10 +152,13 @@ class AskStackResultView extends ScrollView
   renderAnswerBody: (answer, question_id) ->
     # Decode display_name html entities
     display_name = $('<textarea/>').html(answer['owner'].display_name).text();
+    # Store the answer id.
+    answer_id = answer['answer_id'];
+
     answerHtml = $$$ ->
       @div =>
-        @a href: answer['link'], =>
-          @span class: 'answer-link', '➚'
+        @a href: answer['link'], id: "answer-link-#{answer_id}", =>
+          @span class: 'answer-link', title: 'Open in browser', '➚'
         @span class: 'label label-success', 'Accepted' if answer['is_accepted']
         # Added tooltip to explain that the value is the number of votes
         @div class: 'score answer', title: answer['score'] + ' Votes', =>
@@ -164,12 +170,12 @@ class AskStackResultView extends ScrollView
         @div class: 'created', =>
           @text new Date(answer['creation_date'] * 1000).toLocaleString()
           @text ' - answered by '
-          @a href: answer['owner'].link, display_name
+          @a href: answer['owner'].link, id: "answer-author-link-#{answer_id}", display_name
 
     $("#answers-#{question_id}").append($(answerHtml).append(answer['body']))
 
     @highlightCode("answers-#{question_id}")
-    @addCodeButtons("answers-#{question_id}")
+    @addCodeButtons("answers-#{question_id}", answer_id, 'answer')
 
   highlightCode: (elem_id) ->
     pres = @resultsView.find("##{elem_id}").find('pre')
@@ -179,13 +185,13 @@ class AskStackResultView extends ScrollView
         codeHl =  hljs.highlightAuto(code.text()).value
         code.html(codeHl)
 
-  addCodeButtons: (elem_id) ->
+  addCodeButtons: (elem_id, id, id_type) ->
     pres = @resultsView.find("##{elem_id}").find('pre')
     for pre in pres
-      btnInsert = @genCodeButton('Insert')
+      btnInsert = @genCodeButton('Insert', id, id_type)
       $(pre).prev().after(btnInsert)
 
-  genCodeButton: (type) ->
+  genCodeButton: (type, id, id_type) ->
     btn = $('<button/>',
     {
         text: type,
@@ -198,8 +204,30 @@ class AskStackResultView extends ScrollView
           atom.workspace.activatePreviousPane()
           # editor = atom.workspace.activePaneItem
           editor = atom.workspace.getActivePaneItem()
-          editor.insertText(code)
 
+          # Check if an id was passed in to find information about the author and source
+          if id != undefined
+            # Get the attribute author and source information
+            author_src = $("##{id_type}-author-link-#{id}").attr('href');
+            author_name = $("##{id_type}-author-link-#{id}").html();
+            source_src = $("##{id_type}-link-#{id}").attr('href');
+
+            # Transact the following additions so that they are all in one undo instance
+            editor.transact =>
+              # Insert the author information
+              editor.insertText("Author: #{author_name} - #{author_src}", {select: true})
+              editor.toggleLineCommentsInSelection();
+              editor.insertNewlineBelow();
+
+              # Insert the source information
+              editor.insertText("Source: #{source_src}", {select: true})
+              editor.toggleLineCommentsInSelection();
+              editor.insertNewlineBelow();
+
+              # Insert the code
+              editor.insertText(code);
+          else
+            editor.insertText(code)
     return btn
 
   loadMoreResults: ->
