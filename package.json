@@ -1,7 +1,7 @@
 {
   "name": "ask-stack",
   "main": "./lib/ask-stack",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Quickly get answers and code samples from Stack Overflow in Atom",
   "activationCommands": {
     "atom-text-editor": [
