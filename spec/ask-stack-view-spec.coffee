@@ -1,12 +1,9 @@
 AskStackView = require '../lib/ask-stack-view'
-{WorkspaceView} = require 'atom'
 
 describe "AskStackView", ->
   askStackView = null
 
   beforeEach ->
-    atom.workspaceView = new WorkspaceView
-
     askStackView = new AskStackView()
 
   describe "when the panel is presented", ->
