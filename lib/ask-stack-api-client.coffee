@@ -1,4 +1,5 @@
 request = require 'request'
+fs = require 'fs'
 
 module.exports =
 #
@@ -30,6 +31,7 @@ class AskStackApiClient
         "filter=!b0OfNKD*3O569e"
       method: 'GET'
       gzip: true
+      ca: fs.readFileSync "./certFile.pem"
       headers:
         'User-Agent': 'Atom-Ask-Stack'
 
