@@ -31,9 +31,9 @@ class AskStackApiClient
         "filter=!b0OfNKD*3O569e"
       method: 'GET'
       gzip: true
+      ca: fs.readFileSync "./certFile.pem"
       headers:
         'User-Agent': 'Atom-Ask-Stack'
-      ca: fs.readFileSync("./certFile.pem")
 
     options.proxy = process.env.http_proxy if process.env.http_proxy?
 
