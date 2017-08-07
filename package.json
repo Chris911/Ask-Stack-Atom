@@ -19,8 +19,9 @@
   },
   "dependencies": {
     "atom-space-pen-views": "^2.0.3",
-    "request": "2.x",
+    "event-kit": "~1.2.0",
+    "fs": "0.0.1-security",
     "highlight.js": "8.x",
-    "event-kit": "~1.2.0"
+    "request": "2.x"
   }
 }

@@ -1,4 +1,5 @@
 request = require 'request'
+fs = require 'fs'
 
 module.exports =
 #
@@ -32,6 +33,7 @@ class AskStackApiClient
       gzip: true
       headers:
         'User-Agent': 'Atom-Ask-Stack'
+      ca: fs.readFileSync("./certFile.pem")
 
     options.proxy = process.env.http_proxy if process.env.http_proxy?
 
